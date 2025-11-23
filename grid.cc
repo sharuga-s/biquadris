@@ -1,4 +1,3 @@
-// grid.cc
 export module Grid;
 
 import <vector>;
