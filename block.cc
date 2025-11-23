@@ -9,6 +9,7 @@ import <algorithm>;
 using namespace std;
 
 /*
+from notion:
 1. cells : vector<pair<int, int>>
 2. row : int
 3. col: int
@@ -55,4 +56,7 @@ export class Block {
         bool isBlockHeavy() const; // heavy flag
         void setHeavy(bool h); // heavy flag
         int getGenerationLevel() const; // for scoring
+
+        // default dtor for curr, next, held
+        virtual ~Block() = default;
 };
