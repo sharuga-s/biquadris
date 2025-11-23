@@ -16,10 +16,8 @@ Grid::Grid(int r, int c)
 }
 
 bool Grid::isValid(Block* b) const {
-    for (const Cell& c : b->getCells()) {
-        int r = c.getRow();
-        int col = c.getCol();
-
+    // change: get absplute posns isntead 
+    for (auto [r, col] : b->getAbsoluteCells()) {
         if (r < 0 || r >= rows) {
             return false;
         }
@@ -33,6 +31,18 @@ bool Grid::isValid(Block* b) const {
     return true;
 }
 
+// review: i think this method is unnecessary, we could isntead do something like...
+/*
+in Player, when we spawn a block: 
+if (!grid.isValid(next)) {
+    // game over
+}
+the reason why isGameOver() doesnt rlly work is because this isn't a game ending condition that shoulkd be checked by Grid, but rather by GameEngine or Player
+- also, the logic is worng, row 0 is a reserve row => can be occupied/partially filled during the game
+- game ends when the newly generated block cannot be placed in its spawn location
+    - NOT when row 0 is full, NOT when row 3 is full, NOT when any top cells are filled  
+- game over = Grid::isValid(newBlock) is false immediately after spawn
+*/
 bool Grid::isGameOver() const {
     for (int j = 0; j < cols; ++j){
         if (theGrid[0][j].isOccupied()) {
