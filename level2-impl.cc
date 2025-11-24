@@ -1,7 +1,5 @@
-// level2-impl.cc
 module Level2;
 
-import Level2;
 import Block;
 
 import IBlock;
@@ -12,13 +10,12 @@ import SBlock;
 import ZBlock;
 import TBlock;
 
-import <random>;
 import <string>;
+import <cstdlib>;
 
 using namespace std;
 
-// RNG
-static mt19937 rng(random_device{}());
+// Level 2: All blocks are selected with equal probability
 
 Level2::Level2()
     : levelNumber{2}
@@ -41,12 +38,13 @@ void Level2::genBlocksFromFile() {
 }
 
 Block* Level2::getNextBlock() {
-    uniform_int_distribution<int> dist(0, 6);
-    int r = dist(rng);
+    
+    // choose random number 0–6
+    int r = rand() % 7;
 
     if (r == 0) {
         return new IBlock(levelNumber);
-    }
+    } 
     else if (r == 1) {
         return new JBlock(levelNumber);
     } 

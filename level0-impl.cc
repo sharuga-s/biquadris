@@ -1,7 +1,5 @@
-// level0-impl.cc
 module Level0;
 
-import Level0;
 import Block;
 
 import IBlock;
@@ -17,6 +15,15 @@ import <vector>;w
 import <string>;
 
 using namespace std;
+
+// Level 0: (Make sure you at least get this one working!) Takes its blocks in sequence
+// from the files biquadris sequence1.txt (for player 1) and biquadris sequence2.txt (for
+// player 2) (samples are provided), or from other files, whose names are supplied on the com-
+// mand line. If you get to the end of one of these files, and the game hasn’t ended yet, begin
+// reading the file again from the beginning. This level is non-random, and can be used to test
+// with a predetermined set of blocks. Make sure that sequence[1-2].txt, and any other
+// sequence files you intend to use with your project, are submitted to Marmoset
+// along with your code.
 
 Level0::Level0(string file)
     : sequence{}, index{0}, filename{file}, levelNumber{0} 

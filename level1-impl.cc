@@ -1,7 +1,5 @@
-// level1-impl.cc
 module Level1;
 
-import Level1;
 import Block;
 
 import IBlock;
@@ -12,13 +10,14 @@ import SBlock;
 import ZBlock;
 import TBlock;
 
-import <random>;
 import <string>;
+import <cstdlib>;   // rand, srand
 
 using namespace std;
 
-// RNG
-static std::mt19937 rng(std::random_device{}());
+// Level 1: The block selector will randomly choose a block with probabilities skewed such that
+// S and Z blocks are selected with probability 1/12 each, and the other blocks are selected with
+// probability 1/6 each.
 
 Level1::Level1()
     : levelNumber{1} 
@@ -50,10 +49,7 @@ Block* Level1::getNextBlock() {
     // 5: O     (2)
     // 6: T     (2)
 
-    // sets up a distribution that we can use our RNG on
-    uniform_int_distribution<int> dist(0, 11);
-    // find a num between 0-11
-    int r = dist(rng);
+    int r = rand() % 12; //NOTE: WE NEED srand(time(nullptr)) IN GAMEENGINE, it to seed rand()
 
     if (r == 0) {
         return new SBlock(levelNumber);

@@ -1,6 +1,5 @@
 module Level3;
 
-import Level3;
 import Block;
 
 import IBlock;
@@ -11,13 +10,16 @@ import SBlock;
 import ZBlock;
 import TBlock;
 
-import <random>;
 import <string>;
+import <cstdlib>;
 
 using namespace std;
 
-// RNG
-static mt19937 rng(random_device{}());
+// Level 3: The block selector will randomly choose a block with probabilities skewed such that
+// S and Z blocks are selected with probability 2/9 each, and the other blocks are selected with
+// probability 1/9 each. Moreover, blocks generated in level 3 are “heavy”: every command to
+// move or rotate the block will be followed immediately and automatically by a downward move
+// of one row (if possible)
 
 Level3::Level3()
     : levelNumber{3}
@@ -40,22 +42,24 @@ void Level3::genBlocksFromFile() {
 }
 
 Block* Level3::getNextBlock() {
-    uniform_int_distribution<int> dist(0, 11);
-    int r = dist(rng);
+    
+    int r = rand() % 9;
 
-    if (r == 0) {
+    if (r == 0 || r == 1) {
+        // S = 2/9
         return new SBlock(levelNumber);
-    } else if (r == 1) {
-        return new ZBlock(levelNumber);
     } else if (r == 2 || r == 3) {
+        // Z = 2/9
+        return new ZBlock(levelNumber);
+    } else if (r == 4) {
         return new IBlock(levelNumber);
-    } else if (r == 4 || r == 5) {
+    } else if (r == 5) {
         return new JBlock(levelNumber);
-    } else if (r == 6 || r == 7) {
+    } else if (r == 6) {
         return new LBlock(levelNumber);
-    } else if (r == 8 || r == 9) {
+    } else if (r == 7) {
         return new OBlock(levelNumber);
-    } else {
+    } else { // r == 8
         return new TBlock(levelNumber);
     }
 }
