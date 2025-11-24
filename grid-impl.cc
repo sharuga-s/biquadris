@@ -4,9 +4,11 @@ import <vector>;
 import Cell;
 import Block;
 
+using namespace std;
+
 Grid::Grid(int r, int c)
     : rows{r}, cols{c},
-      theGrid(r, std::vector<Cell>(c))
+      theGrid(r, vector<Cell>(c))
 {
     for (int i = 0; i < rows; ++i) { 
         for (int j = 0; j < cols; ++j){ 
@@ -43,14 +45,14 @@ the reason why isGameOver() doesnt rlly work is because this isn't a game ending
     - NOT when row 0 is full, NOT when row 3 is full, NOT when any top cells are filled  
 - game over = Grid::isValid(newBlock) is false immediately after spawn
 */
-bool Grid::isGameOver() const {
-    for (int j = 0; j < cols; ++j){
-        if (theGrid[0][j].isOccupied()) {
-            return true;
-        }
-    }
-    return false;
-}
+// bool Grid::isGameOver() const {
+//     for (int j = 0; j < cols; ++j){
+//         if (theGrid[0][j].isOccupied()) {
+//             return true;
+//         }
+//     }
+//     return false;
+// }
 
 void Grid::reset() {
     for (int i = 0; i < rows; ++i){ 
@@ -60,7 +62,7 @@ void Grid::reset() {
     }
 }
 
-const std::vector<std::vector<Cell>>& Grid::getCells() const {
+const vector<vector<Cell>>& Grid::getCells() const {
     return theGrid;
 }
 

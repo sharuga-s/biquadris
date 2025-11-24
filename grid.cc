@@ -4,12 +4,14 @@ import <vector>;
 import Cell;
 import Block;
 
+using namespace std;
+
 export class Grid {
     int rows;
     int cols;
     bool blindActive = false;
 
-    std::vector<std::vector<Cell>> theGrid;
+    vector<vector<Cell>> theGrid;
 
 public:
     Grid(int r = 18, int c = 11);
@@ -17,7 +19,7 @@ public:
     bool isValid(Block* b) const;
     bool isGameOver() const;
     void reset();
-    const std::vector<std::vector<Cell>>& getCells() const;
+    const vector<vector<Cell>>& getCells() const;
 
     bool isRowFull(int row) const;
     void eraseRow(int row);
