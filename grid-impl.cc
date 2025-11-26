@@ -102,10 +102,9 @@ void Grid::applyBlind(bool on) {
 }
 
 void Grid::placeBlock(Block* b) {
-    for (const Cell& c : b->getCells()) {
-        int r = c.getRow();
-        int col = c.getCol();
-        theGrid[r][col].setVal(b->getVal());
+    // update: absolute positions must be returned to align wiht new block impl
+    for (auto [r, c] : b->getAbsoluteCells()) {
+        theGrid[r][c].setVal(b->getVal());
     }
 }
 

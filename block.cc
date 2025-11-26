@@ -38,9 +38,10 @@ export class Block {
         virtual ~Block() = default;
 
         // movement controls (huge assumption brochacho: BOUNDARY + COLLISION CHECK DONE IN GRID)
-        void moveLeft();
-        void moveRight();
-        void moveDown();
+        void moveLeft(Grid &g);
+        void moveRight(Grid &g);
+        void moveDown(Grid &g);
+        bool softDrop(Grid &g);
 
         // put cells in grid (final placement)
         void place(Grid& g);

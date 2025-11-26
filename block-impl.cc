@@ -94,6 +94,10 @@ void Block::moveDown(Grid& g) {
     tryMove(g, row + 1, col);
 }
 
+bool Block::softDrop(Grid& g) {
+    return tryMove(g, row + 1, col);
+}
+
 // placement controllers --------------------------------------------------------
 void Block::place(Grid& g) {
     g.placeBlock(this);
