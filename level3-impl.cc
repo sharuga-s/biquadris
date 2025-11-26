@@ -50,20 +50,20 @@ Block* Level3::getNextBlock() {
 
     if (r == 0 || r == 1) {
         // S = 2/9
-        return new SBlock(levelNumber);
+        return 'S';
     } else if (r == 2 || r == 3) {
         // Z = 2/9
-        return new ZBlock(levelNumber);
+        return 'Z';
     } else if (r == 4) {
-        return new IBlock(levelNumber);
+        return 'I';
     } else if (r == 5) {
-        return new JBlock(levelNumber);
+        return 'J';
     } else if (r == 6) {
-        return new LBlock(levelNumber);
+        return 'L';
     } else if (r == 7) {
-        return new OBlock(levelNumber);
+        return 'O';
     } else { // r == 8
-        return new TBlock(levelNumber);
+        return 'T';
     }
 }
 

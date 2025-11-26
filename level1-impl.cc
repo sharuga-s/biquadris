@@ -1,15 +1,5 @@
 module Level1;
 
-import Block;
-
-import IBlock;
-import JBlock;
-import LBlock;
-import OBlock;
-import SBlock;
-import ZBlock;
-import TBlock;
-
 import <string>;
 import <cstdlib>;   // rand, srand
 
@@ -39,7 +29,7 @@ void Level1::genBlocksFromFile() {
     // Level 1 ignores sequence files
 }
 
-Block* Level1::getNextBlock() {
+char Level1::generateNextBlockType() {
     // Weighted distribution:
     // 0: S     (1)
     // 1: Z     (1)
@@ -52,26 +42,21 @@ Block* Level1::getNextBlock() {
     int r = rand() % 12; //NOTE: WE NEED srand(time(nullptr)) IN GAMEENGINE, it to seed rand()
 
     if (r == 0) {
-        return new SBlock(levelNumber);
-    } 
-    else if (r == 1) {
-        return new ZBlock(levelNumber);
-    } 
-    else if (r == 2 || r == 3) {
-        return new IBlock(levelNumber);
-    } 
-    else if (r == 4 || r == 5) {
-        return new JBlock(levelNumber);
-    } 
-    else if (r == 6 || r == 7) {
-        return new LBlock(levelNumber);
-    } 
-    else if (r == 8 || r == 9) {
-        return new OBlock(levelNumber);
-    } 
-    else { //r = 10 or r = 11
-        return new TBlock(levelNumber);
+        return 'S';
+    } else if (r == 1) {
+        return 'Z';
+    } else if (r == 2 || r == 3) {
+        return 'I';
+    } else if (r == 4 || r == 5) {
+        return 'J';
+    } else if (r == 6 || r == 7) {
+        return 'L';
+    } else if (r == 8 || r == 9) {
+        return 'O';
+    } else { // 10 or 11
+        return 'T';
     }
+
 }
 
 void Level1::setRandom(bool enabled) {

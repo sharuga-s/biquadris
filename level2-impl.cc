@@ -1,15 +1,5 @@
 module Level2;
 
-import Block;
-
-import IBlock;
-import JBlock;
-import LBlock;
-import OBlock;
-import SBlock;
-import ZBlock;
-import TBlock;
-
 import <string>;
 import <cstdlib>;
 
@@ -37,31 +27,31 @@ void Level2::genBlocksFromFile() {
     // Level 2 does not use sequence files
 }
 
-Block* Level2::getNextBlock() {
+char Level2::generateNextBlockType() {
     
     // choose random number 0–6
     int r = rand() % 7;
 
     if (r == 0) {
-        return new IBlock(levelNumber);
+        return 'I';
     } 
     else if (r == 1) {
-        return new JBlock(levelNumber);
+        return 'J';
     } 
     else if (r == 2) {
-        return new LBlock(levelNumber);
+        return 'L';
     } 
     else if (r == 3) {
-        return new OBlock(levelNumber);
+        return 'O';
     } 
     else if (r == 4) {
-        return new SBlock(levelNumber);
+        return 'S';
     } 
     else if (r == 5) {
-        return new ZBlock(levelNumber);
+        return 'Z';
     } 
     else {
-        return new TBlock(levelNumber);
+        return 'T';
     }
 }
 

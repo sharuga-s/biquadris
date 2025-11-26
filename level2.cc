@@ -12,7 +12,7 @@ export class Level2 : public Level {
     public:
         Level2();
 
-        Block* getNextBlock() override;
+        char generateNextBlockType() override;
         bool isHeavy() const override;
 
         void onBlockPlaced(bool clearedRows) override;

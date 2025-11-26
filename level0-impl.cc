@@ -1,17 +1,7 @@
 module Level0;
 
-import Block;
-
-import IBlock;
-import JBlock;
-import LBlock;
-import OBlock;
-import SBlock;
-import ZBlock;
-import TBlock;
-
 import <fstream>;
-import <vector>;w
+import <vector>;
 import <string>;
 
 using namespace std;
@@ -26,7 +16,7 @@ using namespace std;
 // along with your code.
 
 Level0::Level0(string file)
-    : sequence{}, index{0}, filename{file}, levelNumber{0} 
+    : sequence{}, index{0}, filename{file}, levelNumber{0}
 {
     if (!file.empty()) {
         genBlocksFromFile();
@@ -50,7 +40,7 @@ void Level0::genBlocksFromFile() {
     sequence.clear();
     index = 0;
 
-    ifstream in(filename);
+    ifstream in{filename};
     char ch;
 
     while (in >> ch) {
@@ -58,40 +48,16 @@ void Level0::genBlocksFromFile() {
     }
 }
 
-Block* Level0::getNextBlock() {
+char Level0::generateNextBlockType() {
     if (sequence.empty()) {
-        return nullptr;
+        return '\0'; //means “no block available”
     }
 
     char type = sequence[index];
+    //wrap-around logic --> if we reach the end of the file, go back to the start
     index = (index + 1) % sequence.size();
-
-    if (type == 'I') {
-        return new IBlock(levelNumber);
-    } 
-    else if (type == 'J') {
-        return new JBlock(levelNumber);
-    } 
-    else if (type == 'L') {
-        return new LBlock(levelNumber);
-    } 
-    else if (type == 'O') {
-        return new OBlock(levelNumber);
-    } 
-    else if (type == 'S') {
-        return new SBlock(levelNumber);
-    } 
-    else if (type == 'Z') {
-        return new ZBlock(levelNumber);
-    } 
-    else if (type == 'T') {
-        return new TBlock(levelNumber);
-    } 
-    else {
-        return nullptr;
-    }
+    return type;
 }
 
 void Level0::setRandom(bool enabled) {
-    // Level 0 always uses its sequence file – ignore for now.
 }
