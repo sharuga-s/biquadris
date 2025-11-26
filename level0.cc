@@ -23,4 +23,5 @@ export class Level0 : public Level {
 
         void readFile(string file) override;
         void genBlocksFromFile() override;
+        void setRandom(bool enabled) override;
 };

@@ -50,6 +50,10 @@ void Level4::genBlocksFromFile() {
 }
 
 Block* Level4::getNextBlock() {
+    if (!randomMode) {
+        // TODO: use sequence from file via genBlocksFromFile()
+    }
+
     // special star block after 5 turns without clearing any rows
     if (noClearStreak == 5) {
         noClearStreak = 0;
@@ -76,4 +80,9 @@ Block* Level4::getNextBlock() {
     } else { // r == 8
         return new TBlock(levelNumber);
     }
+}
+
+
+void Level3::setRandom(bool enabled) {
+    randomMode = enabled;
 }

@@ -42,6 +42,9 @@ void Level3::genBlocksFromFile() {
 }
 
 Block* Level3::getNextBlock() {
+    if (!randomMode) {
+        // TODO: use sequence from file via genBlocksFromFile()
+    }
     
     int r = rand() % 9;
 
@@ -62,4 +65,8 @@ Block* Level3::getNextBlock() {
     } else { // r == 8
         return new TBlock(levelNumber);
     }
+}
+
+void Level3::setRandom(bool enabled) {
+    randomMode = enabled;
 }

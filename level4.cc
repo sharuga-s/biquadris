@@ -7,7 +7,7 @@ export class Level4 : public Level {
     private:
         int levelNumber;
         int noClearStreak;
-
+        bool randomMode = true;
     public:
         Level4();
 
@@ -18,4 +18,5 @@ export class Level4 : public Level {
 
         void readFile(std::string file) override;
         void genBlocksFromFile() override;
+        void setRandom(bool enabled) override;
 };

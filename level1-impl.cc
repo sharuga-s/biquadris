@@ -73,3 +73,7 @@ Block* Level1::getNextBlock() {
         return new TBlock(levelNumber);
     }
 }
+
+void Level1::setRandom(bool enabled) {
+    // no-op for now
+}

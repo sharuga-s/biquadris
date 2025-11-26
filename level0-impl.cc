@@ -91,3 +91,7 @@ Block* Level0::getNextBlock() {
         return nullptr;
     }
 }
+
+void Level0::setRandom(bool enabled) {
+    // Level 0 always uses its sequence file – ignore for now.
+}

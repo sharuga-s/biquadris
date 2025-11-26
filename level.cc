@@ -22,4 +22,6 @@ public:
     virtual void readFile(std::string filename) = 0;
 
     virtual void genBlocksFromFile() = 0;
+    // new for levels 3 and 4
+    virtual void setRandom(bool enabled) = 0;
 };

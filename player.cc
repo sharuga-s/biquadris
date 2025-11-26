@@ -77,15 +77,15 @@ export class Player {
         int getLevel() const;
         bool isGameOver() const;
         void setLevel(Level* newLevelImpl, int newLevelNum);
-
-        // scoring
         void addScore(int ptsToAdd);
 
         // effects
-        void applyEffect(SpecialAction* effect);
-        bool isPlayerBlind() const;
-        bool isPlayerHeavy() const;  
+        void applyEffect(SpecialAction* effect); 
 
-        // gane logic
+        // game logic
+        void incLevel(); // move level up
+        void decLevel(); // move level down
+        void forceNextBlock(char type); // FORCE next block special action
+        void setRandomMode(bool enabled);
         void reset();
 };
