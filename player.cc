@@ -6,6 +6,7 @@ import SpecialAction;
 import Block;
 
 import <memory>;
+import <string>;
 
 using namespace std;
 
@@ -55,8 +56,8 @@ export class Player {
         void spawnInitialBlocks();
         void promoteNextBlock();
         void applyHeavy(Block* b);
-        void clearAllBlocks();
         unique_ptr<Block> createBlockFromType(char type);
+        void rebuildLevel();
     public:
         // ctor 
         Player(int levelNum, const string& sequenceFile = "");
@@ -80,7 +81,6 @@ export class Player {
         int getScore() const;
         int getHiScore() const;
         int getLevel() const;
-        void setLevel(Level* newLevelImpl, int newLevelNum);
         void addScore(int ptsToAdd);
         bool getBlind() const;
         void setBlind(bool b);

@@ -80,10 +80,10 @@ void Level3::setRandom(bool enabled) {
     randomMode = enabled;
 }
 
-void Level3::setSequenceFile(const std::string& file) override {
+void Level3::setSequenceFile(const std::string& file) {
     readFile(file);
 }
 
-string Level3::getSequenceFile() const override {
+string Level3::getSequenceFile() const {
     return filename;
 }

@@ -93,10 +93,10 @@ void Level4::setRandom(bool enabled) {
     randomMode = enabled;
 }
 
-void Level4::setSequenceFile(const std::string& file) override {
+void Level4::setSequenceFile(const std::string& file) {
     readFile(file);
 }
 
-string Level4::getSequenceFile() const override {
+string Level4::getSequenceFile() const {
     return filename;
 }

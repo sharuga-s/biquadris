@@ -372,5 +372,7 @@ void Player::reset() {
     nextBlock.reset();
     heldBlock.reset();
 
+    rebuildLevel();
+
     spawnInitialBlocks();
 }
