@@ -117,18 +117,28 @@ void GraphicsDisplay::update() {
         for (int c = 0; c < 11; ++c) {
             int x = board1X + c * cellSize;
             int y = boardY + (r - 3) * cellSize;
-            drawCell(x, y, cells1[r][c].getVal());
+            if (isBlind1 && r >= 3 && r <= 12 && c >= 3 && c <= 9) {
+                drawCell(x, y, '?');  // Draw question mark
+            } else {
+                drawCell(x, y, cells1[r][c].getVal());
+            }
+
         }
     }
     
     // Draw Player 2 board
-    int board2X = board1X + 11 * cellSize + 40;  // 40 pixels spacing
+    int board2X = board1X + 11 * cellSize + 40;
     
     for (int r = 3; r < 18; ++r) {
         for (int c = 0; c < 11; ++c) {
             int x = board2X + c * cellSize;
             int y = boardY + (r - 3) * cellSize;
-            drawCell(x, y, cells2[r][c].getVal());
+            if (isBlind2 && r >= 3 && r <= 12 && c >= 3 && c <= 9) {
+                drawCell(x, y, '?');
+            } else {
+                drawCell(x, y, cells2[r][c].getVal());
+            }
+
         }
     }
     

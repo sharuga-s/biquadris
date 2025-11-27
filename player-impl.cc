@@ -30,7 +30,7 @@ void Player::rebuildLevel() {
 
     // construct appropriate concrete Level
     if (levelNumber == 0) {
-        levelLogic = new Level0("sequence.txt");  // TODO: Use actual sequence file
+        levelLogic = new Level0(levelLogic.getFileName());  // TODO: Use actual sequence file
     } else if (levelNumber == 1) {
         levelLogic = new Level1();
     } else if (levelNumber == 2) {

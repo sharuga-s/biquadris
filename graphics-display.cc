@@ -21,6 +21,8 @@ private:
     int score2 = 0;
     int hiScore1 = 0;
     int hiScore2 = 0;
+    bool isBlind1 = false;
+    bool isBlind2 = false;
     
     // Xwindow wrapper
     unique_ptr<Xwindow> xw;

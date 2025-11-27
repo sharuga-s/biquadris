@@ -68,7 +68,11 @@ void TextDisplay::update() {
         
         // Player 2 board
         for (int c = 0; c < 11; ++c) {
-            cout << cells2[r][c].getVal();
+            if (isBlind2 && r >= 3 && r <= 12 && c >= 3 && c <= 9) {
+                cout << '?';
+            } else {
+                cout << cells2[r][c].getVal();
+            }
         }
         
         cout << endl;

@@ -10,8 +10,8 @@ StarBlock::StarBlock(int level) {
     // 1x1 block for l4
     cells = { {0,0} };
 
-    computeSpawnPosition();
-    col = 5; // bc ts should spawn in the middle, override spawn position
+    row = 3;
+    col = 5;
 }
 
 char StarBlock::getVal() const {
