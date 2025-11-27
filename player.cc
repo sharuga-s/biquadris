@@ -41,7 +41,7 @@ export class Player {
         int levelNumber; 
         Grid grid; // owns-a
         // blocks owned by player at an instnance
-        unique_ptr<Level> currBlock = nullptr;
+        unique_ptr<Block> currBlock = nullptr;
         unique_ptr<Block> nextBlock = nullptr;
         unique_ptr<Block> heldBlock = nullptr;
         bool hasHeldThisTurn = false; // esnsure at most one hold per turn
