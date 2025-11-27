@@ -1,5 +1,9 @@
 module Block;
 
+import <vector>;
+import <utility>;
+import <algorithm>;
+
 using namespace std;
 
 // helper fns -----------------------------------------------------------------
