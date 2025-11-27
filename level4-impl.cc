@@ -1,15 +1,6 @@
 module Level4;
 
-import Block;
-
-import IBlock;
-import JBlock;
-import LBlock;
-import OBlock;
-import SBlock;
-import ZBlock;
-import TBlock;
-import StarBlock;
+import Level;
 
 import <string>;
 import <cstdlib>;

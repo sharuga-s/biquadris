@@ -17,4 +17,7 @@ public:
 
     // new for levels 3 and 4
     virtual void setRandom(bool enabled) = 0;
+
+    // for level 4, no impls in 0, 1, 2
+    virtual void onBlockPlaced(bool clearedRows) = 0;
 };

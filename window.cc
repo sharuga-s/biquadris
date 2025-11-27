@@ -1,9 +1,9 @@
+module;
+#include <X11/Xlib.h>
 export module xwindow;
 
 import <iostream>;
 import <string>;
-
-#include <X11/Xlib.h>;
 
 export class Xwindow {
   Display *d;

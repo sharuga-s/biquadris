@@ -1,5 +1,7 @@
 module Level1;
 
+import Level;
+
 import <string>;
 import <cstdlib>;   // rand, srand
 
@@ -15,10 +17,6 @@ Level1::Level1()
 
 bool Level1::isHeavy() const {
     return false;
-}
-
-void Level1::onBlockPlaced(bool clearedRows) {
-    // Level 1 does nothing here
 }
 
 char Level1::generateNextBlockType() {
@@ -49,6 +47,10 @@ char Level1::generateNextBlockType() {
         return 'T';
     }
 
+}
+
+void Level1::onBlockPlaced(bool clearedRows) {
+    // Level 1 does nothing
 }
 
 void Level1::setRandom(bool enabled) {

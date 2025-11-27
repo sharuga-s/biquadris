@@ -15,15 +15,13 @@ using namespace std;
 // sequence files you intend to use with your project, are submitted to Marmoset
 // along with your code.
 
-Level0::Level0(string file)
-    : sequence{}, index{0}, filename{file}, levelNumber{0}
-{
+Level0::Level0(string file) : sequence{}, index{0}, filename{file}, levelNumber{0} {
     if (!file.empty()) {
         genBlocksFromFile();
     }
 }
 
-string Level0::getFileName const {
+string Level0::getFileName() const {
     return filename;
 }
 
@@ -46,6 +44,10 @@ void Level0::genBlocksFromFile() {
     while (in >> ch) {
         sequence.push_back(ch);
     }
+}
+
+void Level0::onBlockPlaced(bool clearedRows) {
+    // Level 0 does nothing
 }
 
 char Level0::generateNextBlockType() {

@@ -1,6 +1,7 @@
 export module Level0;
 
 import Level;
+
 import <vector>;
 import <string>;
 
@@ -18,10 +19,10 @@ public:
 
     char generateNextBlockType() override;
     bool isHeavy() const override;
-    void onBlockPlaced(bool clearedRows) override;
 
     void readFile(string file);
     void genBlocksFromFile();
     void setRandom(bool enabled) override;
+    void onBlockPlaced() override
     string getFileName() const;
 };

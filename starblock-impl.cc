@@ -11,6 +11,7 @@ StarBlock::StarBlock(int level) {
     cells = { {0,0} };
 
     computeSpawnPosition();
+    col = 5; // bc ts should spawn in the middle, override spawn position
 }
 
 char StarBlock::getVal() const {

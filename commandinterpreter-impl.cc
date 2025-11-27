@@ -117,7 +117,7 @@ string CommandInterpreter::applyMultiplier(const string &cmd) {
     }
 
     if (i == 0) {
-        resolved = resolveAbbreviations(cmd);
+        string resolved = resolveAbbreviations(cmd);
         return resolved;
     }
 

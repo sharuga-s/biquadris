@@ -77,7 +77,7 @@ void Player::spawnInitialBlocks() {
     applyHeavy(nextBlock);
 
     if (currBlock && !grid.isValid(currBlock)) {
-        gameOver = true;
+        isGameOver = true;
     }
 }
 
@@ -93,12 +93,12 @@ void Player::promoteNextBlock() {
     isBlind = false;
 
     if (currBlock && !grid.isValid(currBlock)) {
-        gameOver = true;
+        isGameOver = true;
     }
 }
 
 void Player::holdBlock() {
-    if (gameOver || !currBlock) return;
+    if (isGameOver || !currBlock) return;
     if (hasHeldThisTurn) return;
 
     if (!heldBlock) {
@@ -117,8 +117,15 @@ void Player::holdBlock() {
     hasHeldThisTurn = true;
 
     if (!grid.isValid(currBlock)) {
-        gameOver = true;
+        isGameOver = true;
     }
+}
+
+void Player::clearAllBlocks() {
+    delete currBlock;
+    delete nextBlock;
+    delete heldBlock;
+    currBlock = nextBlock = heldBlock = nullptr;
 }
 
 // ctor and dtor -----------------------------------------------------------------
@@ -173,26 +180,6 @@ void Player::dropBlock() {
 
     // 5. spawn next block
     promoteNextBlock();
-}
-
-void Player::holdBlock() {
-    if (isGameOver || !currBlock) return;
-    if (hasHeldThisTurn) return;
-
-    if (!heldBlock) {
-        heldBlock = currBlock;
-        currBlock = nextBlock;
-        nextBlock = levelLogic->getNextBlock();
-        applyHeavy(nextBlock);
-    } else {
-        std::swap(currBlock, heldBlock); // idek if this allowed brochacho but keep for now
-    }
-
-    hasHeldThisTurn = true;
-
-    if (!grid.isValid(currBlock)) {
-        isGameOver = true;
-    }
 }
 
 // getters and setters ----------------------------------------------------------
@@ -282,7 +269,7 @@ void Player::reset() {
     grid.reset();
 
     score = 0;
-    blindActive = false;
+    isBlind = false;
     heavyEffects = 0;
     isGameOver = false;
     hasHeldThisTurn = false;

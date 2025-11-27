@@ -1,14 +1,6 @@
 module Level3;
 
-import Block;
-
-import IBlock;
-import JBlock;
-import LBlock;
-import OBlock;
-import SBlock;
-import ZBlock;
-import TBlock;
+import Level;
 
 import <string>;
 import <cstdlib>;
@@ -25,15 +17,11 @@ Level3::Level3()
     : levelNumber{3}
 {}
 
-string Level3::getFileName const {
-    return "";
-}
-
 bool Level3::isHeavy() const {
     return true;
 }
 
-char Level3::getNextBlock() {
+char Level3::generateNextBlockType() {
     if (!randomMode) {
         // TODO: use sequence from file via genBlocksFromFile()
     }

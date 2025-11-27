@@ -1,5 +1,7 @@
 module Level2;
 
+import Level;
+
 import <string>;
 import <cstdlib>;
 
@@ -9,7 +11,7 @@ using namespace std;
 
 Level2::Level2()
     : levelNumber{2}
-{}}
+{}
 
 bool Level2::isHeavy() const {
     return false;
@@ -41,6 +43,10 @@ char Level2::generateNextBlockType() {
     else {
         return 'T';
     }
+}
+
+void Level0::onBlockPlaced(bool clearedRows) {
+    // Level 0 does nothing
 }
 
 void Level2::setRandom(bool enabled) {
