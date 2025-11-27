@@ -32,8 +32,6 @@ relationships:
 - HAS-A [composition] Level 
 */
 
-// class SpecialAction;
-
 export class Player {
     private:
         // fields 
@@ -112,4 +110,10 @@ export class Player {
         bool hasSpecialAction() const;
         void clearSpecialAction();
         int getNumSpecialActions() const;
+};
+
+export class SpecialAction {
+public:
+    virtual ~SpecialAction() = default;
+    virtual void apply(Player& p, Grid& g) = 0;
 };

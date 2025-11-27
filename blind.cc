@@ -1,6 +1,5 @@
 export module Blind;
 
-import SpecialAction;
 import Player;
 import Grid;
 

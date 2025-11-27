@@ -22,6 +22,9 @@ void TextDisplay::notify() {
     // Pull data from the Subject (GameEngine)
     const Player& p1 = game->getPlayer1();
     const Player& p2 = game->getPlayer2();
+
+    currBlock1 = p1.getCurrentBlock();
+    currBlock2 = p2.getCurrentBlock();
     
     // Cache the data for rendering
     renderBoard(p1.getGrid(), p2.getGrid(), 
@@ -61,6 +64,10 @@ void TextDisplay::renderScores(int s1, int s2, int hi1, int hi2) {
 void TextDisplay::update() {
     if (!grid1 || !grid2) return;
     
+    const int width = grid1->getCols();   // should be 11
+    const int boardPrintWidth = width * 2; // char + space per column
+    const string sep = "       ";        // spacing between the two boards
+
     // Print scores and levels
     cout << "Level:    " << level1;
     cout << "         Level:    " << level2 << endl;
@@ -70,8 +77,30 @@ void TextDisplay::update() {
     
     cout << "Hi Score: " << hiScore1;
     cout << "         Hi Score: " << hiScore2 << endl;
-    
-    cout << "-----------       -----------" << endl;
+
+    // Column numbers with spaces between columns
+    for (int c = 0; c < width; ++c) {
+        cout << (c % 10);
+        if (c != width - 1) cout << ' ';
+    }
+    cout << sep;
+    for (int c = 0; c < width; ++c) {
+        cout << (c % 10);
+        if (c != width - 1) cout << ' ';
+    }
+    cout << endl;
+
+    // Top border, matching the spaced columns
+    for (int c = 0; c < width; ++c) {
+        cout << '-';
+        if (c != width - 1) cout << ' ';
+    }
+    cout << sep;
+    for (int c = 0; c < width; ++c) {
+        cout << '-';
+        if (c != width - 1) cout << ' ';
+    }
+    cout << endl;
     
     // Get the grid cells
     const auto& cells1 = grid1->getCells();
@@ -80,88 +109,169 @@ void TextDisplay::update() {
     // Print the boards side by side (rows 3-17, skip top 3 reserve rows)
     for (int r = 3; r < 18; ++r) {
         // Player 1 board
-        for (int c = 0; c < 11; ++c) {
+        for (int c = 0; c < width; ++c) {
+            char ch;
             if (isBlind1 && r >= 3 && r <= 12 && c >= 3 && c <= 9) {
-                cout << '?';
+                ch = '?';
             } else {
-                cout << cells1[r][c].getVal();
+                ch = cells1[r][c].getVal();
             }
+            cout << ch;
+            if (c != width - 1) cout << ' ';
         }
         
-        cout << "       ";  // Space between boards
+        cout << sep;  // Space between boards
         
         // Player 2 board
-        for (int c = 0; c < 11; ++c) {
+        for (int c = 0; c < width; ++c) {
+            char ch;
             if (isBlind2 && r >= 3 && r <= 12 && c >= 3 && c <= 9) {
-                cout << '?';
+                ch = '?';
             } else {
-                cout << cells2[r][c].getVal();
+                ch = cells2[r][c].getVal();
             }
+            cout << ch;
+            if (c != width - 1) cout << ' ';
         }
         
         cout << endl;
     }
     
-    cout << "-----------       -----------" << endl;
+    // Bottom border
+    for (int c = 0; c < width; ++c) {
+        cout << '-';
+        if (c != width - 1) cout << ' ';
+    }
+    cout << sep;
+    for (int c = 0; c < width; ++c) {
+        cout << '-';
+        if (c != width - 1) cout << ' ';
+    }
+    cout << endl;
     
-    // Print "Next:" blocks
-    cout << "Next:             Next:" << endl;
-    
-    // Render next blocks (simplified - just show the type)
-    if (nextBlock1) {
-        // Get the cells of the next block
-        const auto& block1Cells = nextBlock1->getCells();
-        
-        // Find dimensions
-        int maxRow = 0, maxCol = 0;
-        for (const auto& [r, c] : block1Cells) {
-            if (r > maxRow) maxRow = r;
-            if (c > maxCol) maxCol = c;
+    // ===== NEXT BLOCKS =====
+    const int previewWidth = 4; // 4 columns for previews (next/current)
+
+    // Align each player's preview under their own "Next:" header
+    // P2 "Next:" starts where its preview starts: previewWidth + sep.size()
+    int nextHeaderPad = (previewWidth + static_cast<int>(sep.size())) - 5; // 5 = len("Next:")
+    if (nextHeaderPad < 1) nextHeaderPad = 1;
+
+    cout << "Next:" << string(nextHeaderPad, ' ') << "Next:" << endl;
+
+    if (nextBlock1 || nextBlock2) {
+        int maxRow1 = 0, maxRow2 = 0;
+
+        if (nextBlock1) {
+            for (auto [r, c] : nextBlock1->getCells()) {
+                if (r > maxRow1) maxRow1 = r;
+            }
         }
-        
-        // Print block
-        for (int r = 0; r <= maxRow; ++r) {
-            for (int c = 0; c <= maxCol; ++c) {
-                bool found = false;
-                for (const auto& [br, bc] : block1Cells) {
-                    if (br == r && bc == c) {
-                        cout << nextBlock1->getVal();
-                        found = true;
-                        break;
-                    }
-                }
-                if (!found) cout << ' ';
+        if (nextBlock2) {
+            for (auto [r, c] : nextBlock2->getCells()) {
+                if (r > maxRow2) maxRow2 = r;
             }
-            
-            // Space and player 2's next block
-            if (nextBlock2) {
-                cout << "       ";  // Space between
-                
-                const auto& block2Cells = nextBlock2->getCells();
-                int maxRow2 = 0, maxCol2 = 0;
-                for (const auto& [r2, c2] : block2Cells) {
-                    if (r2 > maxRow2) maxRow2 = r2;
-                    if (c2 > maxCol2) maxCol2 = c2;
-                }
-                
-                if (r <= maxRow2) {
-                    for (int c = 0; c <= maxCol2; ++c) {
-                        bool found = false;
-                        for (const auto& [br, bc] : block2Cells) {
-                            if (br == r && bc == c) {
-                                cout << nextBlock2->getVal();
-                                found = true;
-                                break;
-                            }
+        }
+
+        int rowsToPrint = maxRow1;
+        if (maxRow2 > rowsToPrint) rowsToPrint = maxRow2;
+
+        for (int r = 0; r <= rowsToPrint; ++r) {
+            // P1 next block in a 4-wide area
+            for (int c = 0; c < previewWidth; ++c) {
+                char ch = ' ';
+                if (nextBlock1) {
+                    for (auto [br, bc] : nextBlock1->getCells()) {
+                        if (br == r && bc == c) {
+                            ch = nextBlock1->getVal();
+                            break;
                         }
-                        if (!found) cout << ' ';
                     }
                 }
+                cout << ch;
             }
-            
+
+            cout << sep;
+
+            // P2 next block
+            for (int c = 0; c < previewWidth; ++c) {
+                char ch = ' ';
+                if (nextBlock2) {
+                    for (auto [br, bc] : nextBlock2->getCells()) {
+                        if (br == r && bc == c) {
+                            ch = nextBlock2->getVal();
+                            break;
+                        }
+                    }
+                }
+                cout << ch;
+            }
+
             cout << endl;
         }
     }
-    
+
+    cout << endl;
+
+    // ===== CURRENT BLOCKS =====
+    // Align each player's current block under their own "Current:" header
+    // Same idea as for "Next:"
+    int currentHeaderPad = (previewWidth + static_cast<int>(sep.size())) - 8; // 8 = len("Current:")
+    if (currentHeaderPad < 1) currentHeaderPad = 1;
+
+    cout << "Current:" << string(currentHeaderPad, ' ') << "Current:" << endl;
+
+    if (currBlock1 || currBlock2) {
+        int maxRow1 = 0, maxRow2 = 0;
+
+        if (currBlock1) {
+            for (auto [r, c] : currBlock1->getCells()) {
+                if (r > maxRow1) maxRow1 = r;
+            }
+        }
+        if (currBlock2) {
+            for (auto [r, c] : currBlock2->getCells()) {
+                if (r > maxRow2) maxRow2 = r;
+            }
+        }
+
+        int rowsToPrint = maxRow1;
+        if (maxRow2 > rowsToPrint) rowsToPrint = maxRow2;
+
+        for (int r = 0; r <= rowsToPrint; ++r) {
+            // P1 current block in a 4-wide area
+            for (int c = 0; c < previewWidth; ++c) {
+                char ch = ' ';
+                if (currBlock1) {
+                    for (auto [br, bc] : currBlock1->getCells()) {
+                        if (br == r && bc == c) {
+                            ch = currBlock1->getVal();
+                            break;
+                        }
+                    }
+                }
+                cout << ch;
+            }
+
+            cout << sep;
+
+            // P2 current block
+            for (int c = 0; c < previewWidth; ++c) {
+                char ch = ' ';
+                if (currBlock2) {
+                    for (auto [br, bc] : currBlock2->getCells()) {
+                        if (br == r && bc == c) {
+                            ch = currBlock2->getVal();
+                            break;
+                        }
+                    }
+                }
+                cout << ch;
+            }
+
+            cout << endl;
+        }
+    }
+
     cout << endl;
 }

@@ -15,6 +15,10 @@ private:
     const Grid* grid2 = nullptr;
     Block* nextBlock1 = nullptr;
     Block* nextBlock2 = nullptr;
+
+    Block* currBlock1 = nullptr;
+    Block* currBlock2 = nullptr;
+
     int level1 = 0;
     int level2 = 0;
     int score1 = 0;

@@ -9,7 +9,6 @@ import ZBlock;
 import TBlock;
 import StarBlock;
 import LevelFactory;  
-import SpecialAction;
 
 import <algorithm>;
 import <memory>;

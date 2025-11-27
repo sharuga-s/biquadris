@@ -74,12 +74,15 @@ void Grid::placeBlock(Block* b) {
 
 void Grid::clearFullRows(int& numCleared) {
     numCleared = 0;
+
+    // Just COUNT full rows; do NOT erase here
     for (int r = 0; r < rows; ++r) {
         if (isRowFull(r)) {
-            eraseRow(r);
-            numCleared++;
+            ++numCleared;
         }
     }
+
+    // Now actually clear + collapse them
     if (numCleared > 0) {
         collapseRows();
     }

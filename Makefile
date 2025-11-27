@@ -50,10 +50,7 @@ $(EXEC):
 	
 	@echo "Building player (depends on Level, Grid, Block types)..."
 	$(CXX) $(CXXFLAGS) -c player.cc
-	
-	@echo "Building special-action (depends on Player, Grid)..."
-	$(CXX) $(CXXFLAGS) -c special-action.cc
-	
+		
 	@echo "Building special actions (depend on SpecialAction, Player, Grid)..."
 	$(CXX) $(CXXFLAGS) -c blind.cc heavy.cc
 	

@@ -1,6 +1,5 @@
 export module Heavy;
 
-import SpecialAction;
 import Player;
 import Grid;
 
