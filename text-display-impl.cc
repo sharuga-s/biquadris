@@ -9,7 +9,6 @@ import Player;
 import <iostream>;
 import <string>;
 import <vector>;
-import <iomanip>;
 
 using namespace std;
 
@@ -21,8 +20,8 @@ void TextDisplay::notify() {
     if (!game) return;
     
     // Pull data from the Subject (GameEngine)
-    const Player& p1 = game->getPlayer1();
-    const Player& p2 = game->getPlayer2();
+    const Player& p1 = game->currentPlayer();
+    const Player& p2 = game->otherPlayer();
     
     // Cache the data for rendering
     renderBoard(p1.getGrid(), p2.getGrid(), 
