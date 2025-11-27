@@ -110,6 +110,7 @@ export class Player {
         bool hasSpecialAction() const;
         void clearSpecialAction();
         int getNumSpecialActions() const;
+        void useOneSpecialAction();
 };
 
 export class SpecialAction {

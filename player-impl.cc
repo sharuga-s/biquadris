@@ -110,6 +110,8 @@ void Player::holdBlock() {
         swap(currBlock, heldBlock);
     }
 
+    currBlock->setPosition(3, 0);
+
     hasHeldThisTurn = true;
 
     if (currBlock && !grid.isValid(currBlock.get())) {
@@ -253,10 +255,14 @@ void Player::dropBlock() {
 
     grid.placeBlock(currBlock.get());
 
-    isBlind = false;
-
     int numCleared = 0;
     grid.clearFullRows(numCleared);
+
+    // --- FIX HERE ---
+    // Blind should clear at the END of this player's drop, no matter what.
+    if (isBlind) {
+        isBlind = false;
+    }
 
     if (numCleared > 0) {
         int pts = (levelNumber + numCleared) * (levelNumber + numCleared);
@@ -337,6 +343,16 @@ void Player::clearSpecialAction() {
 int Player::getNumSpecialActions() const {
     return numSpecialActions;
 }
+
+void Player::useOneSpecialAction() {
+    if (numSpecialActions > 0) {
+        --numSpecialActions;
+        if (numSpecialActions == 0) {
+            specialActionTriggered = false;
+        }
+    }
+}
+
 
 // =========================
 //  Level up/down

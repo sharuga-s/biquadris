@@ -79,19 +79,31 @@ void GameEngine::executeSingleCommand(const string& cmd) {
         currPlayer = 0;           // player 1 starts again
     }
     else if (cmd == "blind") {
-        // apply Blind to the *other* player
-        Blind effect;
-        otherPlayer().applyEffect(&effect);
+        // Only allowed if current player has special actions
+        if (p.hasSpecialAction() && p.getNumSpecialActions() > 0) {
+            Blind effect;
+            otherPlayer().applyEffect(&effect);
+            p.useOneSpecialAction();
+        }
     }
     else if (cmd == "heavy") {
-        // apply Heavy to the *other* player
-        Heavy effect;
-        otherPlayer().applyEffect(&effect);
+        // Only allowed if current player has special actions
+        if (p.hasSpecialAction() && p.getNumSpecialActions() > 0) {
+            Heavy effect;
+            otherPlayer().applyEffect(&effect);
+            p.useOneSpecialAction();
+
+            notifyObservers();
+        }
     }
+
     else if (cmd == "I" || cmd == "J" || cmd == "L" ||
              cmd == "O" || cmd == "S" || cmd == "Z" || cmd == "T") {
         // SPECIAL ACTION: FORCE NEXT BLOCK on the *other* player
-        otherPlayer().forceNextBlock(cmd[0]);
+        if (p.hasSpecialAction() && p.getNumSpecialActions() > 0) {
+            otherPlayer().forceNextBlock(cmd[0]);
+            p.useOneSpecialAction();
+        }
     }
 
     // OBSERVER PATTERN: Notify all observers after state change!
