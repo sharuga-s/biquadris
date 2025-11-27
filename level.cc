@@ -23,4 +23,10 @@ export class Level {
     // Load a sequence file (used by 0, 3, 4; no-op for 1, 2)
     virtual void readFile(string file) = 0;
 
+<<<<<<< Updated upstream
+=======
+        // Load a sequence file (used by 0, 3, 4; no-op for 1, 2)
+        virtual void readFile(string file) = 0;
+
+>>>>>>> Stashed changes
 };
