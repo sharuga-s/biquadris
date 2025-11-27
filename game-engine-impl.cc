@@ -3,6 +3,9 @@ module GameEngine;
 import Player;
 import Subject;
 import CommandInterpreter;
+import Blind;
+import Heavy;
+import Level;
 
 import <iostream>;
 import <fstream>;
@@ -68,8 +71,18 @@ void GameEngine::executeSingleCommand(const string& cmd) {
         p.setRandomMode(true);
     } else if (cmd == "norandom") {
         p.setRandomMode(false);
-    } else if (cmd == "I" || cmd == "J" || cmd == "L" ||
-               cmd == "O" || cmd == "S" || cmd == "Z" || cmd == "T") { 
+    } else if (cmd == "blind") {
+        // apply Blind to the *other* player
+        Blind effect;
+        otherPlayer().applyEffect(&effect);
+    }
+    else if (cmd == "heavy") {
+        // apply Heavy to the *other* player
+        Heavy effect;
+        otherPlayer().applyEffect(&effect);
+    }
+    else if (cmd == "I" || cmd == "J" || cmd == "L" ||
+             cmd == "O" || cmd == "S" || cmd == "Z" || cmd == "T") {
         // SPECIAL ACTION: FORCE NEXT BLOCK on the *other* player
         otherPlayer().forceNextBlock(cmd[0]);
     }
@@ -126,31 +139,26 @@ void GameEngine::handleCommand(const string& rawCmd) {
             string filename;
             if (!(iss >> filename)) break;
             executeSequenceFile(filename);
-        } else if (token == "norandom") {
+        }
+        else if (token == "norandom") {
+            // Support "norandom <file>" for levels 3 & 4 (and any Level that
+            // implements readFile + setRandom).
             string filename;
-            if (!(iss >> filename)) {
-                cerr << "norandom requires a filename\n";
-                break;
-            }
-            
-            Player& p = currentPlayer();
-            
-            // If player is in level 3 or 4, set the sequence file
-            if (p.getLevel() == 3) {
-                Level3* lvl3 = dynamic_cast<Level3*>(p.getLevelLogic());
-                if (lvl3) {
-                    lvl3->setSequenceFile(filename);
-                    lvl3->setRandom(false);
+            if (iss >> filename) {
+                Player& p = currentPlayer();
+                Level* logic = p.getLevelLogic();
+                if (logic) {
+                    logic->readFile(filename);   // load sequence
+                    logic->setRandom(false);     // disable random
                 }
-            } else if (p.getLevel() == 4) {
-                Level4* lvl4 = dynamic_cast<Level4*>(p.getLevelLogic());
-                if (lvl4) {
-                    lvl4->setSequenceFile(filename);
-                    lvl4->setRandom(false);
-                }
+                // state changed → notify
+                notifyObservers();
+            } else {
+                // just "norandom" → delegate to normal handling
+                executeSingleCommand("norandom");
             }
-            updateDisplays();
-        } else {
+        }
+        else {
             executeSingleCommand(token);
         }
     }
