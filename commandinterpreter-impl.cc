@@ -6,7 +6,6 @@ import <fstream>;
 import <sstream>;
 import <string>;
 import <vector>;
-import <cctype>;
 
 using namespace std;
 
@@ -186,19 +185,4 @@ string CommandInterpreter::parse(const string &cmd) {
     string expanded = expandShortcuts(cmd);
     string finalCmd = applyMultiplier(expanded);
     return finalCmd;
-}
-
-void CommandInterpreter::executeSequenceFile(const string &filename) {
-    ifstream in(filename);
-    if (!in) {
-        return;
-    }
-
-    string line;
-    while (getline(in, line)) {
-        string parsed = parse(line);
-        // The interpreter does not execute commands itself.
-        // GameEngine will read and execute parsed commands.
-        //*** UPDATE THIS AFTER GAMEENGINE IMPL */
-    }
 }
