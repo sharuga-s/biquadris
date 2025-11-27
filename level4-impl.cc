@@ -83,6 +83,6 @@ char Level4::generateNextBlockType() {
 }
 
 
-void Level3::setRandom(bool enabled) {
+void Level4::setRandom(bool enabled) {
     randomMode = enabled;
 }

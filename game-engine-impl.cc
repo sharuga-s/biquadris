@@ -85,7 +85,6 @@ void GameEngine::executeSingleCommand(const std::string& cmd) {
         otherPlayer().forceNextBlock(cmd[0]);
     }
 
-
     // igore unknown commands
 
     updateDisplays();

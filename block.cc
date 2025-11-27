@@ -53,7 +53,7 @@ export class Block {
         // getters/accessors/setters
         const vector<pair<int,int>>& getCells() const;
         vector<pair<int,int>> getAbsoluteCells() const; // this converts the cell position to absolute grid position 
-        char getVal() const = 0; // return block type -> PVM [makes this class ABSTRACT]
+        virtual char getVal() const = 0; // return block type -> PVM [makes this class ABSTRACT]
         bool isBlockHeavy() const; // heavy flag
         void setHeavy(bool h); // heavy flag
         int getGenerationLevel() const; // for scoring

@@ -10,6 +10,11 @@ import SBlock;
 import ZBlock;
 import TBlock;
 import StarBlock;
+import Level0;
+import Level1;
+import Level2;
+import Level3;
+import Level4;
 
 import <algorithm>;
 
@@ -25,8 +30,7 @@ void Player::rebuildLevel() {
 
     // construct appropriate concrete Level
     if (levelNumber == 0) {
-        // TODO: pass sequence filename you used at startup
-        levelLogic = new Level0("sequence.txt");  // placeholder
+        levelLogic = new Level0("sequence.txt");  // TODO: Use actual sequence file
     } else if (levelNumber == 1) {
         levelLogic = new Level1();
     } else if (levelNumber == 2) {
@@ -50,10 +54,10 @@ void Player::applyHeavy(Block* b) const {
 }
 
 void Player::spawnInitialBlocks() {
-    currBlock = levelLogic->getNextBlock();
+    currBlock = levelLogic->generateNextBlock();
     applyHeavy(currBlock);
 
-    nextBlock = levelLogic->getNextBlock();
+    nextBlock = levelLogic->generateNextBlock();
     applyHeavy(nextBlock);
 
     if (currBlock && !grid.isValid(currBlock)) {
@@ -65,7 +69,7 @@ void Player::promoteNextBlock() {
     delete currBlock;
     currBlock = nextBlock;
 
-    nextBlock = levelLogic->getNextBlock();
+    nextBlock = levelLogic->generateNextBlockType();
     applyHeavy(nextBlock);
 
     hasHeldThisTurn = false;
@@ -201,13 +205,13 @@ bool Player::isHeavy() const {
 }
 
 // game logic --------------------------------------------------------------------
-void Player::levelUp() {
+void Player::incLevel() {
     ++levelNumber;
     if (levelNumber > 4) levelNumber = 4;
     rebuildLevel();
 }
 
-void Player::levelDown() {
+void Player::decLevel() {
     --levelNumber;
     if (levelNumber < 0) levelNumber = 0;
     rebuildLevel();

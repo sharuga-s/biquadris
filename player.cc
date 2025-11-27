@@ -45,7 +45,7 @@ export class Player {
         bool isGameOver = false;
         int heavyEffects = 0;
 
-        // helpder functions
+        // helper functions
         void spawnInitialBlocks();
         void promoteNextBlock();
         void applyHeavy(Block* b) const;
@@ -75,7 +75,6 @@ export class Player {
         int getScore() const;
         int getHiScore() const;
         int getLevel() const;
-        bool isGameOver() const;
         void setLevel(Level* newLevelImpl, int newLevelNum);
         void addScore(int ptsToAdd);
 

@@ -59,7 +59,7 @@ void Block::computeSpawnPosition() {
 }
 
 
-bool tryMove(Grid& g, int new_row, int new_col) {
+bool Block::tryMove(Grid& g, int new_row, int new_col) {
     int old_row = row;
     int old_col = col;
 

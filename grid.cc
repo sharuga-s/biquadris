@@ -17,7 +17,6 @@ public:
     Grid(int r = 18, int c = 11);
 
     bool isValid(Block* b) const;
-    bool isGameOver() const;
     void reset();
     const vector<vector<Cell>>& getCells() const;
 
