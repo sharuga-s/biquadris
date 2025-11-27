@@ -326,6 +326,19 @@ bool Player::isHeavy() const {
     return levelLogic->isHeavy() || heavyEffects > 0;
 }
 
+bool Player::hasSpecialAction() const {
+    return specialActionTriggered;
+}
+
+void Player::clearSpecialAction() {
+    specialActionTriggered = false;
+    numSpecialActions = 0;
+}
+
+int Player::getNumSpecialActions() const {
+    return numSpecialActions;
+}
+
 // =========================
 //  Level up/down
 // =========================

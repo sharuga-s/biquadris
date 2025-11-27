@@ -26,6 +26,6 @@ export class Level4 : public Level {
         void onBlockPlaced(bool clearedRows) override;
         void setRandom(bool enabled) override;
         void readFile(string file) override;
-        void setSequenceFile(const std::string& file) override;
+        void setSequenceFile(const string& file) override;
         string getSequenceFile() const override;
 };
