@@ -1,63 +1,55 @@
 export module Block;
 
-import Grid;
-
 import <vector>;
 import <utility>;
 import <algorithm>;
 
 using namespace std;
 
-/*
-from notion:
-1. cells : vector<pair<int, int>>
-2. row : int
-3. col: int
-4. heavy : bool
-5. levelGenerated : int
-6. rotation : int
-*/
-
 export class Block {
-    protected: 
-        // fields 
-        vector<pair<int, int>> cells; // stores the relative offsets of each tile in the block -> NOT the absolute grid position
-        int row; // absolute pos of box's top left corner -> revisit design soon :)
-        int col;
-        bool heavy; // gaf for level 3 and level 4
-        int levelGenerated; // gaf for the scoring 
-        int rotation; // int rep for orientation -> 0,1,2,3
+protected:
+    // fields
+    vector<pair<int, int>> cells;  // relative offsets
+    int row;                       // absolute top-left row
+    int col;                       // absolute top-left col
+    bool heavy;                    // level 3/4 or special action
+    int levelGenerated;            // for scoring
+    int rotation;                  // 0,1,2,3
 
-        // helper functions
-        void applyCWRotation();
-        void applyCCWRotation();
-        void computeSpawnPosition();
-        bool tryMove(Grid& g, int new_row, int new_col);
-    public:
-        // block ctor
-        virtual ~Block() = default;
+    // rotation helpers
+    void applyCWRotation();
+    void applyCCWRotation();
+    void computeSpawnPosition();
 
-        // movement controls (huge assumption brochacho: BOUNDARY + COLLISION CHECK DONE IN GRID)
-        void moveLeft(Grid &g);
-        void moveRight(Grid &g);
-        void moveDown(Grid &g);
-        bool softDrop(Grid &g);
+public:
+    virtual ~Block() = default;
 
-        // put cells in grid (final placement)
-        void place(Grid& g);
+    // --- position helpers (no Grid) ---
+    int  getRow() const { return row; }
+    int  getCol() const { return col; }
+    void setPosition(int r, int c) { row = r; col = c; }
 
-        // rotation controls
-        void rotateCW(Grid& g);
-        void rotateCCW(Grid& g);
+    // --- rotation helpers (no Grid) ---
+    int  getRotation() const { return rotation; }
+    void setRotation(int r) { rotation = r % 4; }
 
-        // getters/accessors/setters
-        const vector<pair<int,int>>& getCells() const;
-        vector<pair<int,int>> getAbsoluteCells() const; // this converts the cell position to absolute grid position 
-        virtual char getVal() const = 0; // return block type -> PVM [makes this class ABSTRACT]
-        bool isBlockHeavy() const; // heavy flag
-        void setHeavy(bool h); // heavy flag
-        int getGenerationLevel() const; // for scoring
+    // Apply a raw rotation to the shape only.
+    // Player is responsible for checking validity & reverting if needed.
+    void rotateCWLocal();
+    void rotateCCWLocal();
 
-        // default dtor for curr, next, held
-        virtual ~Block() = default;
+    // cell access
+    const vector<pair<int,int>>& getCells() const;
+    void setCells(const vector<pair<int,int>>& newCells);
+
+    // converts to absolute grid coordinates using the block's row/col
+    vector<pair<int,int>> getAbsoluteCells() const;
+
+    // abstract API
+    virtual char getVal() const = 0;   // block type
+
+    // heavy + scoring info
+    bool isBlockHeavy() const;
+    void setHeavy(bool h);
+    int  getGenerationLevel() const;
 };

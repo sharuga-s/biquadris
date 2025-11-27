@@ -41,7 +41,7 @@ export class Player {
         int levelNumber; 
         Grid grid; // owns-a
         // blocks owned by player at an instnance
-        unique_ptr<Block> currBlock = nullptr;
+        unique_ptr<Level> currBlock = nullptr;
         unique_ptr<Block> nextBlock = nullptr;
         unique_ptr<Block> heldBlock = nullptr;
         bool hasHeldThisTurn = false; // esnsure at most one hold per turn
@@ -71,9 +71,9 @@ export class Player {
         // accessors/getters and setters
         Grid& getGrid();
         const Grid& getGrid() const;
-        Block* getCurrentBlock() const;
-        Block* getNextBlock() const;
-        Block* getHeldBlock() const;
+        unique_ptr<Block> getCurrentBlock() const;
+        unique_ptr<Block> getNextBlock() const;
+        unique_ptr<Block> getHeldBlock() const;
         int getScore() const;
         int getHiScore() const;
         int getLevel() const;

@@ -169,111 +169,23 @@ Player::~Player() = default;
 //  Movement
 // =========================
 void Player::moveBlockLeft() {
-    if (isGameOver || !currBlock) return;
-
-    int r = currBlock->getRow();
-    int c = currBlock->getCol() - 1;
-
-    if (grid.isValidPosition(*currBlock, r, c)) {
-        currBlock->setPosition(r, c);
-
-        // Heavy rule: extra drop after horizontal movement
-        if (currBlock->isBlockHeavy()) {
-            int hr = r + 1;
-            if (grid.isValidPosition(*currBlock, hr, c)) {
-                currBlock->setPosition(hr, c);
-            }
-        }
-    }
+    if (!isGameOver && currBlock) currBlock->moveLeft(grid);
 }
 
 void Player::moveBlockRight() {
-    if (isGameOver || !currBlock) return;
-
-    int r = currBlock->getRow();
-    int c = currBlock->getCol() + 1;
-
-    if (grid.isValidPosition(*currBlock, r, c)) {
-        currBlock->setPosition(r, c);
-
-        // Heavy rule: extra drop after horizontal movement
-        if (currBlock->isBlockHeavy()) {
-            int hr = r + 1;
-            if (grid.isValidPosition(*currBlock, hr, c)) {
-                currBlock->setPosition(hr, c);
-            }
-        }
-    }
+    if (!isGameOver && currBlock) currBlock->moveRight(grid);
 }
 
 void Player::moveBlockDown() {
-    if (isGameOver || !currBlock) return;
-
-    int r = currBlock->getRow() + 1;
-    int c = currBlock->getCol();
-
-    // Manual "down" does NOT apply heavy extra-drop
-    if (grid.isValidPosition(*currBlock, r, c)) {
-        currBlock->setPosition(r, c);
-    }
+    if (!isGameOver && currBlock) currBlock->moveDown(grid);
 }
 
-
-// =======================================================
-//  ROTATION (controller-based, with revert + heavy drop)
-// =======================================================
 void Player::rotateCW() {
-    if (isGameOver || !currBlock) return;
-
-    int r = currBlock->getRow();
-    int c = currBlock->getCol();
-
-    // Save old state
-    auto oldCells = currBlock->getCells();
-    int oldRot = currBlock->getRotation();
-
-    // Local rotation only (no Grid)
-    currBlock->rotateCWLocal();
-
-    // If illegal, revert
-    if (!grid.isValidPosition(*currBlock, r, c)) {
-        currBlock->setCells(oldCells);
-        currBlock->setRotation(oldRot);
-        return;
-    }
-
-    // Heavy: apply forced downward movement if possible
-    if (currBlock->isBlockHeavy()) {
-        int hr = r + 1;
-        if (grid.isValidPosition(*currBlock, hr, c)) {
-            currBlock->setPosition(hr, c);
-        }
-    }
+    if (!isGameOver && currBlock) currBlock->rotateCW(grid);
 }
 
 void Player::rotateCCW() {
-    if (isGameOver || !currBlock) return;
-
-    int r = currBlock->getRow();
-    int c = currBlock->getCol();
-
-    auto oldCells = currBlock->getCells();
-    int oldRot = currBlock->getRotation();
-
-    currBlock->rotateCCWLocal();
-
-    if (!grid.isValidPosition(*currBlock, r, c)) {
-        currBlock->setCells(oldCells);
-        currBlock->setRotation(oldRot);
-        return;
-    }
-
-    if (currBlock->isBlockHeavy()) {
-        int hr = r + 1;
-        if (grid.isValidPosition(*currBlock, hr, c)) {
-            currBlock->setPosition(hr, c);
-        }
-    }
+    if (!isGameOver && currBlock) currBlock->rotateCCW(grid);
 }
 
 // =========================
@@ -282,19 +194,10 @@ void Player::rotateCCW() {
 void Player::dropBlock() {
     if (isGameOver || !currBlock) return;
 
-    int r = currBlock->getRow();
-    int c = currBlock->getCol();
+    while (currBlock->softDrop(grid)) {}
 
-    // Fall until cannot
-    while (grid.isValidPosition(*currBlock, r + 1, c)) {
-        r += 1;
-        currBlock->setPosition(r, c);
-    }
-
-    // Place onto grid
     grid.placeBlock(currBlock.get());
 
-    // Blind clears on drop
     isBlind = false;
 
     int numCleared = 0;
@@ -314,7 +217,6 @@ void Player::dropBlock() {
 
     promoteNextBlock();
 }
-
 
 // =========================
 //  Getters

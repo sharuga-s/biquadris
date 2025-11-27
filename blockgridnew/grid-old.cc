@@ -24,9 +24,4 @@ public:
 
     void placeBlock(Block* b);
     void clearFullRows(int& numCleared);
-
-    int getRows() const;
-    int getCols() const;
-    bool isOccupied(int r, int c) const;
-    bool isValidPosition(const Block& b, int baseRow, int baseCol) const;
 };
