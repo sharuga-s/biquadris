@@ -13,11 +13,13 @@ using namespace std;
 
 TextDisplay::TextDisplay() {}
 
-void TextDisplay::renderBoard(const Grid& g1, const Grid& g2, int lvl1, int lvl2) {
+void TextDisplay::renderBoard(const Grid& g1, const Grid& g2, int lvl1, int lvl2, bool blind1, bool blind2) {
     grid1 = &g1;
     grid2 = &g2;
     level1 = lvl1;
     level2 = lvl2;
+    isBlind1 = blind1;
+    isBlind2 = blind2;
 }
 
 void TextDisplay::renderNext(Block* next1, Block* next2) {
@@ -55,7 +57,11 @@ void TextDisplay::update() {
     for (int r = 3; r < 18; ++r) {
         // Player 1 board
         for (int c = 0; c < 11; ++c) {
-            cout << cells1[r][c].getVal();
+            if (isBlind1 && r >= 3 && r <= 12 && c >= 3 && c <= 9) {
+                cout << '?';
+            } else {
+                cout << cells1[r][c].getVal();
+            }
         }
         
         cout << "       ";  // Space between boards

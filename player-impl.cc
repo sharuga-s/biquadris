@@ -228,6 +228,14 @@ void Player::setLevel(Level* newLogic, int newLevelNum) {
     applyHeavy(nextBlock);
 }
 
+void setBlind(bool b){
+    isBlind = b;
+}
+
+bool getBlind() const{
+    return isBlind;
+}
+
 // effects ----------------------------------------------------------------------
 void Player::applyEffect(SpecialAction* effect) {
     if (!effect || isGameOver) return;

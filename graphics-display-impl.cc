@@ -66,11 +66,13 @@ void GraphicsDisplay::drawBlock(Block* block, int offsetX, int offsetY) {
     }
 }
 
-void GraphicsDisplay::renderBoard(const Grid& g1, const Grid& g2, int lvl1, int lvl2) {
+void GraphicsDisplay::renderBoard(const Grid& g1, const Grid& g2, int lvl1, int lvl2, bool blind1, bool blind2) {
     grid1 = &g1;
     grid2 = &g2;
     level1 = lvl1;
     level2 = lvl2;
+    isBlind1 = blind1;
+    isBlind2 = blind2;
 }
 
 void GraphicsDisplay::renderNext(Block* next1, Block* next2) {

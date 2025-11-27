@@ -29,13 +29,13 @@ void GameEngine::switchTurns() {
 // this will need a lot of refactoring once we work on Display...
 void GameEngine::updateDisplays() {
     // text
-    textDisplay.renderBoard(players[0].getGrid(), players[1].getGrid(), players[0].getLevel(), players[1].getLevel());
+    textDisplay.renderBoard(players[0].getGrid(), players[1].getGrid(), players[0].getLevel(), players[1].getLevel(), players[0].getBlind(), players[1].getBlind());
     textDisplay.renderNext(players[0].getNextBlock(), players[1].getNextBlock());
     textDisplay.renderScores(players[0].getScore(), players[1].getScore(), players[0].getHiScore(), players[1].getHiScore());
     textDisplay.update();
 
     // graphics
-    graphicsDisplay.renderBoard(players[0].getGrid(), players[1].getGrid(), players[0].getLevel(), players[1].getLevel());
+    graphicsDisplay.renderBoard(players[0].getGrid(), players[1].getGrid(), players[0].getLevel(), players[1].getLevel(), players[0].getBlind(), players[1].getBlind());
     graphicsDisplay.renderNext(players[0].getNextBlock(), players[1].getNextBlock());
     graphicsDisplay.renderScores(players[0].getScore(), players[1].getScore(), players[0].getHiScore(), players[1].getHiScore());
     graphicsDisplay.update();

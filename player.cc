@@ -77,6 +77,8 @@ export class Player {
         int getLevel() const;
         void setLevel(Level* newLevelImpl, int newLevelNum);
         void addScore(int ptsToAdd);
+        void setBlind(bool b);
+        bool getBlind() const;
 
         // effects
         void applyEffect(SpecialAction* effect); 
