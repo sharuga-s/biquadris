@@ -52,3 +52,7 @@ void Level2::onBlockPlaced(bool clearedRows) {
 void Level2::setRandom(bool enabled) {
     // no-op for now
 }
+
+void readFile(string file) {
+    //nothing
+}
