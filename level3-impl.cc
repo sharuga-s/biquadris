@@ -14,17 +14,45 @@ using namespace std;
 // of one row (if possible)
 
 Level3::Level3()
-    : levelNumber{3}
+    : levelNumber{3}, sequenceIndex{0}
 {}
 
 bool Level3::isHeavy() const {
     return true;
 }
 
-char Level3::generateNextBlockType() {
-    if (!randomMode) {
-        // TODO: use sequence from file via genBlocksFromFile()
+void Level3::onBlockPlaced(bool clearedRows) {
+    // nothing happens
+}
+
+void Level3::loadSequenceFile() {
+    sequence.clear();
+    sequenceIndex = 0;
+    
+    if (filename.empty()) return;
+    
+    ifstream in{filename};
+    if (!in) return;
+    
+    char ch;
+    while (in >> ch) {
+        sequence.push_back(ch);
     }
+}
+
+void Level3::setSequenceFile(const string& file) {
+    filename = file;
+    loadSequenceFile();
+}
+
+char Level3::generateNextBlockType() {
+    
+    if (!randomMode && !sequence.empty()) {
+        char type = sequence[sequenceIndex];
+        sequenceIndex = (sequenceIndex + 1) % sequence.size();  // wrap-around logic
+        return type;
+    }
+
     
     int r = rand() % 9;
 

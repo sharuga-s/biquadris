@@ -64,7 +64,6 @@ export class Player {
         void rotateCCW();
         void dropBlock();
         void holdBlock();
-        bool softDrop(Grid &g);
 
         // accessors/getters and setters
         Grid& getGrid();
@@ -77,8 +76,9 @@ export class Player {
         int getLevel() const;
         void setLevel(Level* newLevelImpl, int newLevelNum);
         void addScore(int ptsToAdd);
-        void setBlind(bool b);
         bool getBlind() const;
+        void setBlind(bool b);
+        Level* Player::getLevelLogic() const;
 
         // effects
         void applyEffect(SpecialAction* effect); 

@@ -45,7 +45,7 @@ char Level2::generateNextBlockType() {
     }
 }
 
-void Level0::onBlockPlaced(bool clearedRows) {
+void Level2::onBlockPlaced(bool clearedRows) {
     // Level 0 does nothing
 }
 

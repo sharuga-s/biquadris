@@ -131,7 +131,6 @@ void GameEngine::end() {
 void GameEngine::handleCommand(const std::string& rawCmd) {
     if (gameOver) return;
 
-    // needs work: once ci implemented, we need to fix ts if needed!
     string expanded = ci.parse(rawCmd);
     if (expanded.empty()) return;
 
@@ -143,10 +142,32 @@ void GameEngine::handleCommand(const std::string& rawCmd) {
             string filename;
             if (!(iss >> filename)) break;
             executeSequenceFile(filename);
+        } else if (token == "norandom") {
+            string filename;
+            if (!(iss >> filename)) {
+                cerr << "norandom requires a filename\n";
+                break;
+            }
+            
+            Player& p = currentPlayer();
+            
+            // If player is in level 3 or 4, set the sequence file
+            if (p.getLevel() == 3) {
+                Level3* lvl3 = dynamic_cast<Level3*>(p.getLevelLogic());
+                if (lvl3) {
+                    lvl3->setSequenceFile(filename);
+                    lvl3->setRandom(false);
+                }
+            } else if (p.getLevel() == 4) {
+                Level4* lvl4 = dynamic_cast<Level4*>(p.getLevelLogic());
+                if (lvl4) {
+                    lvl4->setSequenceFile(filename);
+                    lvl4->setRandom(false);
+                }
+            }
+            updateDisplays();
         } else {
             executeSingleCommand(token);
         }
     }
 }
-
-
