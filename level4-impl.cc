@@ -69,7 +69,7 @@ char Level4::generateNextBlockType() {
 
     if (r == 0 || r == 1) {
         // S = 2/9
-        return new 'S';
+        return 'S';
     } else if (r == 2 || r == 3) {
         // Z = 2/9
         return 'Z';
