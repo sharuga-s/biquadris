@@ -10,19 +10,16 @@ import SBlock;
 import ZBlock;
 import TBlock;
 import StarBlock;
-import Level0;
-import Level1;
-import Level2;
-import Level3;
-import Level4;
+import LevelFactory;  
 
 import <algorithm>;
-import <memory>;   // for unique_ptr and make_unique
+import <memory>;
+import <string>;
 
 // =========================
 //  Helper: Create new block
 // =========================
-std::unique_ptr<Block> Player::createBlockFromType(char type) {
+unique_ptr<Block> Player::createBlockFromType(char type) {
     switch (type) {
         case 'I': return make_unique<IBlock>(levelNumber);
         case 'J': return make_unique<JBlock>(levelNumber);
@@ -46,46 +43,17 @@ void Player::applyHeavy(Block* b) {
 }
 
 // =========================
-//  Rebuild Level on levelUp/down
+//  Rebuild Level on levelUp/down - NOW USES FACTORY
 // =========================
 void Player::rebuildLevel() {
-    // Ask the current level for its sequence file (works for 0/3/4)
-    std::string seqFile = levelLogic->getSequenceFile();
-
-    // Boundaries
+    // Clamp boundaries
     if (levelNumber < 0) levelNumber = 0;
     if (levelNumber > 4) levelNumber = 4;
 
-    // Rebuild using pure polymorphism
-    switch (levelNumber) {
-        case 0:
-            if (seqFile.empty()) seqFile = "sequence1.txt";
-            levelLogic = std::make_unique<Level0>(seqFile);
-            break;
+    // Use factory to create new level, preserving sequence file
+    levelLogic = LevelFactory::createLevelPreservingSequence(levelNumber, levelLogic.get());
 
-        case 1:
-            levelLogic = std::make_unique<Level1>();
-            break;
-
-        case 2:
-            levelLogic = std::make_unique<Level2>();
-            break;
-
-        case 3: {
-            auto lvl = std::make_unique<Level3>();
-            if (!seqFile.empty()) lvl->setSequenceFile(seqFile);
-            levelLogic = std::move(lvl);
-            break;
-        }
-
-        case 4: {
-            auto lvl = std::make_unique<Level4>();
-            if (!seqFile.empty()) lvl->setSequenceFile(seqFile);
-            levelLogic = std::move(lvl);
-            break;
-        }
-    }
-
+    // Update heavy state on existing blocks
     applyHeavy(currBlock.get());
     applyHeavy(nextBlock.get());
 }
@@ -111,7 +79,7 @@ void Player::spawnInitialBlocks() {
 //  Promote nextBlock → currBlock
 // =========================
 void Player::promoteNextBlock() {
-    currBlock = std::move(nextBlock);
+    currBlock = move(nextBlock);
 
     char nextType = levelLogic->generateNextBlockType();
     nextBlock = createBlockFromType(nextType);
@@ -132,14 +100,14 @@ void Player::holdBlock() {
     if (hasHeldThisTurn) return;
 
     if (!heldBlock) {
-        heldBlock = std::move(currBlock);
-        currBlock = std::move(nextBlock);
+        heldBlock = move(currBlock);
+        currBlock = move(nextBlock);
 
         char nextType = levelLogic->generateNextBlockType();
         nextBlock = createBlockFromType(nextType);
         applyHeavy(nextBlock.get());
     } else {
-        std::swap(currBlock, heldBlock);
+        swap(currBlock, heldBlock);
     }
 
     hasHeldThisTurn = true;
@@ -150,20 +118,21 @@ void Player::holdBlock() {
 }
 
 // =========================
-//  Constructor
+//  Constructor - NOW USES FACTORY
 // =========================
-Player::Player(std::unique_ptr<Level> logic, int lvl)
-    : levelLogic(std::move(logic)),
-      levelNumber(lvl),
+Player::Player(int levelNum, const string& sequenceFile)
+    : levelNumber(levelNum),
       grid(18, 11) {
-
+    
+    // Clamp level number
+    if (levelNumber < 0) levelNumber = 0;
+    if (levelNumber > 4) levelNumber = 4;
+    
+    // Use factory to create initial level
+    levelLogic = LevelFactory::createLevel(levelNumber, sequenceFile);
+    
     spawnInitialBlocks();
 }
-
-// =========================
-//  Destructor — defaulted!
-// =========================
-Player::~Player() = default;
 
 // =========================
 //  Movement
@@ -177,7 +146,6 @@ void Player::moveBlockLeft() {
     if (grid.isValidPosition(*currBlock, r, c)) {
         currBlock->setPosition(r, c);
 
-        // Heavy rule: extra drop after horizontal movement
         if (currBlock->isBlockHeavy()) {
             int hr = r + 1;
             if (grid.isValidPosition(*currBlock, hr, c)) {
@@ -196,7 +164,6 @@ void Player::moveBlockRight() {
     if (grid.isValidPosition(*currBlock, r, c)) {
         currBlock->setPosition(r, c);
 
-        // Heavy rule: extra drop after horizontal movement
         if (currBlock->isBlockHeavy()) {
             int hr = r + 1;
             if (grid.isValidPosition(*currBlock, hr, c)) {
@@ -212,37 +179,31 @@ void Player::moveBlockDown() {
     int r = currBlock->getRow() + 1;
     int c = currBlock->getCol();
 
-    // Manual "down" does NOT apply heavy extra-drop
     if (grid.isValidPosition(*currBlock, r, c)) {
         currBlock->setPosition(r, c);
     }
 }
 
-
-// =======================================================
-//  ROTATION (controller-based, with revert + heavy drop)
-// =======================================================
+// =========================
+//  ROTATION
+// =========================
 void Player::rotateCW() {
     if (isGameOver || !currBlock) return;
 
     int r = currBlock->getRow();
     int c = currBlock->getCol();
 
-    // Save old state
     auto oldCells = currBlock->getCells();
     int oldRot = currBlock->getRotation();
 
-    // Local rotation only (no Grid)
     currBlock->rotateCWLocal();
 
-    // If illegal, revert
     if (!grid.isValidPosition(*currBlock, r, c)) {
         currBlock->setCells(oldCells);
         currBlock->setRotation(oldRot);
         return;
     }
 
-    // Heavy: apply forced downward movement if possible
     if (currBlock->isBlockHeavy()) {
         int hr = r + 1;
         if (grid.isValidPosition(*currBlock, hr, c)) {
@@ -277,7 +238,7 @@ void Player::rotateCCW() {
 }
 
 // =========================
-//  DROP + scoring + heavy/level logic
+//  DROP + scoring
 // =========================
 void Player::dropBlock() {
     if (isGameOver || !currBlock) return;
@@ -285,16 +246,13 @@ void Player::dropBlock() {
     int r = currBlock->getRow();
     int c = currBlock->getCol();
 
-    // Fall until cannot
     while (grid.isValidPosition(*currBlock, r + 1, c)) {
         r += 1;
         currBlock->setPosition(r, c);
     }
 
-    // Place onto grid
     grid.placeBlock(currBlock.get());
 
-    // Blind clears on drop
     isBlind = false;
 
     int numCleared = 0;
@@ -314,7 +272,6 @@ void Player::dropBlock() {
 
     promoteNextBlock();
 }
-
 
 // =========================
 //  Getters
@@ -363,7 +320,6 @@ void Player::decrementHeavyEffects() {
     applyHeavy(nextBlock.get());
 }
 
-// returns whether or not the current level is heavy + whether or not there's heavy effect in play, caused by opposite player
 bool Player::isHeavy() const {
     return levelLogic->isHeavy() || heavyEffects > 0;
 }

@@ -57,6 +57,6 @@ void Level1::setRandom(bool enabled) {
     // no-op for now
 }
 
-void readFile(string file) {
+void Level1::readFile(string file) {
     // nothing
 }

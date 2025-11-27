@@ -101,3 +101,4 @@ export class Player {
         void clearSpecialAction() { specialActionTriggered = false; }
         int getNumSpecialActions() const { return numSpecialActions; }
 };
+ 

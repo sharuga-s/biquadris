@@ -21,7 +21,7 @@ export class Level {
         virtual void onBlockPlaced(bool clearedRows) = 0;
 
         // Load a sequence file (used by 0, 3, 4; no-op for 1, 2)
-        virtual void readFile(string file);
+        virtual void readFile(string file) = 0;
 
         virtual void setSequenceFile(const std::string&) {}   // level1/2 ignore
         virtual std::string getSequenceFile() const { return ""; }

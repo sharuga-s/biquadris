@@ -48,6 +48,8 @@ export class Player {
         bool isBlind = false;
         bool isGameOver = false;
         int heavyEffects = 0;
+        bool specialActionTriggered = false;  
+        int numSpecialActions = 0;
 
         // helper functions
         void spawnInitialBlocks();
@@ -57,7 +59,8 @@ export class Player {
         unique_ptr<Block> createBlockFromType(char type);
     public:
         // ctor 
-        Player(Level* levelImpl, int levelNum);
+        Player(int levelNum, const string& sequenceFile = "");
+        ~Player() = default; // dtor
 
         // movement logic for a block
         void moveBlockLeft();
@@ -81,7 +84,8 @@ export class Player {
         void addScore(int ptsToAdd);
         bool getBlind() const;
         void setBlind(bool b);
-        Level* Player::getLevelLogic() const;
+        Level* getLevelLogic() const;
+        bool isGameOver() const;
 
         // effects
         void applyEffect(SpecialAction* effect); 
@@ -97,7 +101,7 @@ export class Player {
         void reset();
 
         // special action state
-        bool hasSpecialAction() const { return specialActionTriggered; }
-        void clearSpecialAction() { specialActionTriggered = false; }
-        int getNumSpecialActions() const { return numSpecialActions; }
+        bool hasSpecialAction() const;
+        void clearSpecialAction();
+        int getNumSpecialActions() const;
 };
