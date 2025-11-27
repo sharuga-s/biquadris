@@ -32,7 +32,7 @@ void Level4::onBlockPlaced(bool clearedRows) {
     }
 }
 
-void Level4::loadSequenceFile() {
+void Level4::genBlocksFromFile() {
     sequence.clear();
     sequenceIndex = 0;
     
@@ -47,9 +47,9 @@ void Level4::loadSequenceFile() {
     }
 }
 
-void Level4::setSequenceFile(const string& file) {
+void Level4::readFile(string file) {
     filename = file;
-    loadSequenceFile();
+    genBlocksFromFile();
 }
 
 char Level4::generateNextBlockType() {

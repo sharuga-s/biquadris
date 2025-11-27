@@ -25,7 +25,7 @@ void Level3::onBlockPlaced(bool clearedRows) {
     // nothing happens
 }
 
-void Level3::loadSequenceFile() {
+void Level3::genBlocksFromFile() {
     sequence.clear();
     sequenceIndex = 0;
     
@@ -40,9 +40,9 @@ void Level3::loadSequenceFile() {
     }
 }
 
-void Level3::setSequenceFile(const string& file) {
+void Level3::readFile(string file) {
     filename = file;
-    loadSequenceFile();
+    genBlocksFromFile();
 }
 
 char Level3::generateNextBlockType() {

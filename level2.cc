@@ -17,4 +17,5 @@ export class Level2 : public Level {
         bool isHeavy() const override;
         void onBlockPlaced(bool clearedRows) override;
         void setRandom(bool enabled) override;
+        void readFile(string file) override;
 };

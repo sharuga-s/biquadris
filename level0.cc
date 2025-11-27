@@ -14,14 +14,16 @@ private:
     string filename;
     int levelNumber;
 
+    void genBlocksFromFile();
+
+
 public:
     explicit Level0(string file);
 
     char generateNextBlockType() override;
     bool isHeavy() const override;
 
-    void readFile(string file);
-    void genBlocksFromFile();
+    void readFile(string file) override;
     void setRandom(bool enabled) override;
     void onBlockPlaced(bool clearedRows) override;
     string getFileName() const;

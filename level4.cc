@@ -11,6 +11,9 @@ export class Level4 : public Level {
         vector<char> sequence;
         int sequenceIndex = 0;
         string filename;
+
+        void genBlocksFromFile();
+
     public:
         Level4();
 
@@ -20,4 +23,6 @@ export class Level4 : public Level {
         void onBlockPlaced(bool clearedRows);
 
         void setRandom(bool enabled) override;
+
+        void readFile(string file) override;
 };

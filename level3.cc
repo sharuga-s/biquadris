@@ -14,7 +14,7 @@ export class Level3 : public Level {
         int sequenceIndex = 0;
         string filename;
         
-        void loadSequenceFile();
+        void genBlocksFromFile();
 
     public:
         Level3();
@@ -25,5 +25,5 @@ export class Level3 : public Level {
 
         void setRandom(bool enabled) override;
 
-        void setSequenceFile(const std::string& file);
+        void readFile(string file) override;
 };
