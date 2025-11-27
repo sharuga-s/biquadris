@@ -2,6 +2,8 @@ module Level4;
 
 import Level;
 
+import <fstream>;
+import <vector>;
 import <string>;
 import <cstdlib>;
 
