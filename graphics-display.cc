@@ -2,6 +2,11 @@ export module GraphicsDisplay;
 
 import Grid;
 import Block;
+import xwindow;
+
+import <memory>;
+
+using namespace std;
 
 export class GraphicsDisplay {
 private:
@@ -17,21 +22,19 @@ private:
     int hiScore1 = 0;
     int hiScore2 = 0;
     
-    // X11 window stuff (will be nullptr in text-only mode)
-    void* display = nullptr;  // X11 Display*
-    void* window = nullptr;   // X11 Window
-    void* gc = nullptr;       // X11 GC (graphics context)
+    // Xwindow wrapper
+    unique_ptr<Xwindow> xw;
     
     int cellSize = 20;  // Size of each cell in pixels
-    bool initialized = false;
+    bool textOnly = false;
     
-    void initX11();
     void drawCell(int x, int y, char type);
     int getColorForType(char type);
+    void drawBlock(Block* block, int offsetX, int offsetY);
     
 public:
     GraphicsDisplay(bool textOnly = false);
-    ~GraphicsDisplay();
+    ~GraphicsDisplay() = default;
     
     void renderBoard(const Grid& g1, const Grid& g2, int lvl1, int lvl2);
     void renderNext(Block* next1, Block* next2);

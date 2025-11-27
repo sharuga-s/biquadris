@@ -35,9 +35,6 @@ void TextDisplay::renderScores(int s1, int s2, int hi1, int hi2) {
 void TextDisplay::update() {
     if (!grid1 || !grid2) return;
     
-    // Clear screen (optional - can remove if causes issues)
-    // cout << "\033[2J\033[1;1H";
-    
     // Print scores and levels
     cout << "Level:    " << level1;
     cout << "         Level:    " << level2 << endl;

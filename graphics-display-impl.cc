@@ -3,79 +3,67 @@ module GraphicsDisplay;
 import Grid;
 import Block;
 import Cell;
+import xwindow;
 
 import <iostream>;
 import <string>;
+import <memory>;
 
 using namespace std;
 
-// For now, this is a stub implementation that does nothing
-// You'll need to add X11 headers and linking later
-
-GraphicsDisplay::GraphicsDisplay(bool textOnly) {
-    if (textOnly) {
-        initialized = false;
-        return;
+GraphicsDisplay::GraphicsDisplay(bool textOnlyMode) : textOnly{textOnlyMode} {
+    if (!textOnly) {
+        // Create window: 2 boards (11 cells wide each) + spacing + next block area
+        // Width: (11 + 5 + 11 + 5) cells * 20 pixels = 640 pixels
+        // Height: 15 rows * 20 + 150 for header/footer = 450 pixels
+        int width = 32 * cellSize;   // 640 pixels
+        int height = 15 * cellSize + 150;  // 450 pixels
+        
+        xw = make_unique<Xwindow>(width, height);
     }
-    
-    // TODO: Initialize X11 window
-    // This requires X11 headers which may not compile without proper setup
-    initialized = false;
-}
-
-GraphicsDisplay::~GraphicsDisplay() {
-    // TODO: Clean up X11 resources
-}
-
-void GraphicsDisplay::initX11() {
-    // TODO: Create X11 window
-    // Example code (requires X11 headers):
-    /*
-    display = XOpenDisplay(nullptr);
-    if (!display) {
-        cerr << "Cannot open X11 display" << endl;
-        return;
-    }
-    
-    int screen = DefaultScreen(display);
-    window = XCreateSimpleWindow(display, RootWindow(display, screen),
-                                  0, 0, 800, 600, 1,
-                                  BlackPixel(display, screen),
-                                  WhitePixel(display, screen));
-    
-    XSelectInput(display, window, ExposureMask | KeyPressMask);
-    XMapWindow(display, window);
-    
-    gc = XCreateGC(display, window, 0, nullptr);
-    initialized = true;
-    */
 }
 
 int GraphicsDisplay::getColorForType(char type) {
-    // Map block types to colors
-    // These would be actual X11 color values
+    // Map block types to Xwindow colors
     switch (type) {
-        case 'I': return 0; // Cyan
-        case 'J': return 1; // Blue
-        case 'L': return 2; // Orange
-        case 'O': return 3; // Yellow
-        case 'S': return 4; // Green
-        case 'Z': return 5; // Red
-        case 'T': return 6; // Purple
-        case '*': return 7; // Brown
-        default: return 8;  // White/empty
+        case 'I': return Xwindow::Cyan;
+        case 'J': return Xwindow::Blue;
+        case 'L': return Xwindow::Orange;
+        case 'O': return Xwindow::Yellow;
+        case 'S': return Xwindow::Green;
+        case 'Z': return Xwindow::Red;
+        case 'T': return Xwindow::Magenta;
+        case '*': return Xwindow::Brown;
+        case ' ': return Xwindow::White;
+        case '?': return Xwindow::Black;  // For blind effect
+        default: return Xwindow::White;
     }
 }
 
 void GraphicsDisplay::drawCell(int x, int y, char type) {
-    // TODO: Draw a cell at pixel position (x, y) with color for type
-    // Example X11 code:
-    /*
-    XSetForeground(display, gc, getColorForType(type));
-    XFillRectangle(display, window, gc, x, y, cellSize, cellSize);
-    XSetForeground(display, gc, BlackPixel(display, DefaultScreen(display)));
-    XDrawRectangle(display, window, gc, x, y, cellSize, cellSize);
-    */
+    if (!xw) return;
+    
+    int color = getColorForType(type);
+    
+    // Fill the cell with color
+    xw->fillRectangle(x, y, cellSize, cellSize, color);
+    
+    // Draw border (black outline)
+    // We can't draw just an outline with fillRectangle, so we'll skip the border
+    // or draw it as thin rectangles if needed
+}
+
+void GraphicsDisplay::drawBlock(Block* block, int offsetX, int offsetY) {
+    if (!block || !xw) return;
+    
+    const auto& cells = block->getCells();
+    char type = block->getVal();
+    
+    for (const auto& [r, c] : cells) {
+        int x = offsetX + c * cellSize;
+        int y = offsetY + r * cellSize;
+        drawCell(x, y, type);
+    }
 }
 
 void GraphicsDisplay::renderBoard(const Grid& g1, const Grid& g2, int lvl1, int lvl2) {
@@ -98,37 +86,60 @@ void GraphicsDisplay::renderScores(int s1, int s2, int hi1, int hi2) {
 }
 
 void GraphicsDisplay::update() {
-    if (!initialized) return;
+    if (textOnly || !xw) return;
     if (!grid1 || !grid2) return;
     
-    // TODO: Clear window and redraw everything
-    // Example structure:
-    /*
-    XClearWindow(display, window);
+    // Clear window (draw white background)
+    xw->fillRectangle(0, 0, 32 * cellSize, 15 * cellSize + 150, Xwindow::White);
     
-    // Draw player 1 board
+    int headerHeight = 80;  // Space for scores at top
+    
+    // Draw scores and levels at top
+    xw->drawString(10, 20, "Player 1");
+    xw->drawString(10, 40, "Level: " + to_string(level1));
+    xw->drawString(10, 60, "Score: " + to_string(score1));
+    
+    xw->drawString(350, 20, "Player 2");
+    xw->drawString(350, 40, "Level: " + to_string(level2));
+    xw->drawString(350, 60, "Score: " + to_string(score2));
+    
+    // Get the grid cells
     const auto& cells1 = grid1->getCells();
+    const auto& cells2 = grid2->getCells();
+    
+    // Draw Player 1 board (rows 3-17, columns 0-10)
+    int board1X = 10;
+    int boardY = headerHeight;
+    
     for (int r = 3; r < 18; ++r) {
         for (int c = 0; c < 11; ++c) {
-            int x = c * cellSize;
-            int y = (r - 3) * cellSize + 50;  // Offset for score display
+            int x = board1X + c * cellSize;
+            int y = boardY + (r - 3) * cellSize;
             drawCell(x, y, cells1[r][c].getVal());
         }
     }
     
-    // Draw player 2 board (offset to the right)
-    const auto& cells2 = grid2->getCells();
+    // Draw Player 2 board
+    int board2X = board1X + 11 * cellSize + 40;  // 40 pixels spacing
+    
     for (int r = 3; r < 18; ++r) {
         for (int c = 0; c < 11; ++c) {
-            int x = (c + 15) * cellSize;  // Offset by 15 cells
-            int y = (r - 3) * cellSize + 50;
+            int x = board2X + c * cellSize;
+            int y = boardY + (r - 3) * cellSize;
             drawCell(x, y, cells2[r][c].getVal());
         }
     }
     
-    // Draw scores (would need XDrawString)
-    // Draw next blocks
+    // Draw "Next" blocks below the boards
+    int nextY = boardY + 15 * cellSize + 20;
     
-    XFlush(display);
-    */
+    xw->drawString(board1X, nextY, "Next:");
+    if (nextBlock1) {
+        drawBlock(nextBlock1, board1X, nextY + 10);
+    }
+    
+    xw->drawString(board2X, nextY, "Next:");
+    if (nextBlock2) {
+        drawBlock(nextBlock2, board2X, nextY + 10);
+    }
 }

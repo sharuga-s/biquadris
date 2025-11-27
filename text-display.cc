@@ -5,6 +5,7 @@ import Block;
 
 export class TextDisplay {
 private:
+    // stored data for rendering
     const Grid* grid1 = nullptr;
     const Grid* grid2 = nullptr;
     Block* nextBlock1 = nullptr;
@@ -22,5 +23,5 @@ public:
     void renderBoard(const Grid& g1, const Grid& g2, int lvl1, int lvl2);
     void renderNext(Block* next1, Block* next2);
     void renderScores(int s1, int s2, int hi1, int hi2);
-    void update(); 
+    void update();  // print ts to cout
 };
