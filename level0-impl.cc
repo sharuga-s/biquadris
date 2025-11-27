@@ -63,3 +63,12 @@ char Level0::generateNextBlockType() {
 
 void Level0::setRandom(bool enabled) {
 }
+
+void Level0::setSequenceFile(const std::string& file) override {
+    readFile(file);
+}
+
+string Level0::getSequenceFile() const override {
+    return filename;
+}
+

@@ -77,3 +77,11 @@ char Level3::generateNextBlockType() {
 void Level3::setRandom(bool enabled) {
     randomMode = enabled;
 }
+
+void Level3::getSequenceFile(const std::string& file) override {
+    readFile(file);   
+}
+
+string Level3::getSequenceFile() const override {
+    return filename;
+}

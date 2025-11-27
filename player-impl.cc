@@ -49,37 +49,43 @@ void Player::applyHeavy(Block* b) {
 //  Rebuild Level on levelUp/down
 // =========================
 void Player::rebuildLevel() {
-    // Save sequence filename if coming from Level0
-    string seqFile = "";
-    if (auto* lvl0 = dynamic_cast<Level0*>(levelLogic.get())) {
-        seqFile = lvl0->getFileName();
-    }
+    // Ask the current level for its sequence file (works for 0/3/4)
+    std::string seqFile = levelLogic->getSequenceFile();
 
     // Boundaries
     if (levelNumber < 0) levelNumber = 0;
     if (levelNumber > 4) levelNumber = 4;
 
-    // Replace levelLogic with new unique_ptr
+    // Rebuild using pure polymorphism
     switch (levelNumber) {
         case 0:
             if (seqFile.empty()) seqFile = "sequence1.txt";
-            levelLogic = make_unique<Level0>(seqFile);
+            levelLogic = std::make_unique<Level0>(seqFile);
             break;
+
         case 1:
-            levelLogic = make_unique<Level1>();
+            levelLogic = std::make_unique<Level1>();
             break;
+
         case 2:
-            levelLogic = make_unique<Level2>();
+            levelLogic = std::make_unique<Level2>();
             break;
-        case 3:
-            levelLogic = make_unique<Level3>();
+
+        case 3: {
+            auto lvl = std::make_unique<Level3>();
+            if (!seqFile.empty()) lvl->setSequenceFile(seqFile);
+            levelLogic = std::move(lvl);
             break;
-        case 4:
-            levelLogic = make_unique<Level4>();
+        }
+
+        case 4: {
+            auto lvl = std::make_unique<Level4>();
+            if (!seqFile.empty()) lvl->setSequenceFile(seqFile);
+            levelLogic = std::move(lvl);
             break;
+        }
     }
 
-    // Reapply heavy effect
     applyHeavy(currBlock.get());
     applyHeavy(nextBlock.get());
 }

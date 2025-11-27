@@ -87,7 +87,14 @@ char Level4::generateNextBlockType() {
     }
 }
 
-
 void Level4::setRandom(bool enabled) {
     randomMode = enabled;
+}
+
+void Level4::setSequenceFile(const std::string& file) override {
+    readFile(file);
+}
+
+string Level4::getSequenceFile() const override {
+    return filename;
 }

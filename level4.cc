@@ -19,10 +19,9 @@ export class Level4 : public Level {
 
         char generateNextBlockType() override;
         bool isHeavy() const override;
-
         void onBlockPlaced(bool clearedRows);
-
         void setRandom(bool enabled) override;
-
         void readFile(string file) override;
+        void setSequenceFile(const std::string& file) override;
+        string getSequenceFile() const override;
 };

@@ -15,8 +15,6 @@ private:
     int levelNumber;
 
     void genBlocksFromFile();
-
-
 public:
     explicit Level0(string file);
 
@@ -27,4 +25,7 @@ public:
     void setRandom(bool enabled) override;
     void onBlockPlaced(bool clearedRows) override;
     string getFileName() const;
+
+    void setSequenceFile(const std::string& file) override;
+    string getSequenceFile() const override;
 };

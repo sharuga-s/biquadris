@@ -17,16 +17,13 @@ export class Level {
         // new for levels 3 and 4
         virtual void setRandom(bool enabled) = 0;
 
-    // for level 4, no impls in 0, 1, 2
-    virtual void onBlockPlaced(bool clearedRows) = 0;
+        // for level 4, no impls in 0, 1, 2
+        virtual void onBlockPlaced(bool clearedRows) = 0;
 
-    // Load a sequence file (used by 0, 3, 4; no-op for 1, 2)
-    virtual void readFile(string file) = 0;
-
-<<<<<<< Updated upstream
-=======
         // Load a sequence file (used by 0, 3, 4; no-op for 1, 2)
-        virtual void readFile(string file) = 0;
+        virtual void readFile(string file);
 
->>>>>>> Stashed changes
+        virtual void setSequenceFile(const std::string&) {}   // level1/2 ignore
+        virtual std::string getSequenceFile() const { return ""; }
+
 };
