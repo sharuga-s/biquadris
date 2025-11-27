@@ -8,6 +8,9 @@ export class Level4 : public Level {
         int levelNumber;
         int noClearStreak;
         bool randomMode = true;
+        vector<char> sequence;
+        int sequenceIndex = 0;
+        string filename;
     public:
         Level4();
 

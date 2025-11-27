@@ -51,6 +51,7 @@ void Player::applyHeavy(Block* b) const {
     if (!b) return;
     bool heavy = levelLogic->isHeavy() || heavyEffects > 0;
     b->setHeavy(heavy);
+    heavyEffects++;
 }
 
 Block* Player::createBlockFromType(char type) {
@@ -90,10 +91,10 @@ void Player::promoteNextBlock() {
     applyHeavy(nextBlock);
 
     hasHeldThisTurn = false;
-    isBlind = false;
+    // Don't clear isBlind here - it's cleared in dropBlock()
 
     if (currBlock && !grid.isValid(currBlock)) {
-        isGameOver = true;
+        gameOver = true;
     }
 }
 
@@ -160,13 +161,13 @@ void Player::rotateCCW() {
 void Player::dropBlock() {
     if (isGameOver || !currBlock) return;
 
-    // 1. hard drop: repeat until cant fall w/ new softDrop method from Block
     while (currBlock->softDrop(grid)) {}
 
-    // 2. place
     grid.placeBlock(currBlock);
 
-    // 3. clear rows + compute score
+    // 3. Clear blind effect IMMEDIATELY after dropping (before clearing rows)
+    isBlind = false;
+    
     int numCleared = 0;
     grid.clearFullRows(numCleared);
 
@@ -175,10 +176,15 @@ void Player::dropBlock() {
         addScore(pts);
     }
 
-    // 4. Level notifications (for Level 4 star block, etc.)
     levelLogic->onBlockPlaced(numCleared > 0);
 
-    // 5. spawn next block
+    // check if special action triggered (2+ rows cleared)
+    if (numCleared >= 2) {
+        specialActionTriggered = true;
+        numSpecialActions = numCleared; // Store for later
+    }
+
+    // spawn next block
     promoteNextBlock();
 }
 

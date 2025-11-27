@@ -32,9 +32,31 @@ void Level4::onBlockPlaced(bool clearedRows) {
     }
 }
 
+void Level4::loadSequenceFile() {
+    sequence.clear();
+    sequenceIndex = 0;
+    
+    if (filename.empty()) return;
+    
+    ifstream in{filename};
+    if (!in) return;
+    
+    char ch;
+    while (in >> ch) {
+        sequence.push_back(ch);
+    }
+}
+
+void Level4::setSequenceFile(const string& file) {
+    filename = file;
+    loadSequenceFile();
+}
+
 char Level4::generateNextBlockType() {
-    if (!randomMode) {
-        // TODO: use sequence from file via genBlocksFromFile()
+    if (!randomMode && !sequence.empty()) {
+        char type = sequence[sequenceIndex];
+        sequenceIndex = (sequenceIndex + 1) % sequence.size();  // wrap-around logic
+        return type;
     }
 
     // special star block after 5 turns without clearing any rows

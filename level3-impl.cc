@@ -52,8 +52,7 @@ char Level3::generateNextBlockType() {
         sequenceIndex = (sequenceIndex + 1) % sequence.size();  // wrap-around logic
         return type;
     }
-
-    
+  
     int r = rand() % 9;
 
     if (r == 0 || r == 1) {
