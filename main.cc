@@ -55,30 +55,30 @@ int main(int argc, char* argv[]) {
     
     switch (startLevel) {
         case 0:
-            level1 = new Level0(scriptFile1);
-            level2 = new Level0(scriptFile2);
+            level1 = make_unique<Level0>(scriptFile1); 
+            level2 = make_unique<Level0>(scriptFile2); 
             break;
         case 1:
-            level1 = new Level1();
-            level2 = new Level1();
+            level1 = make_unique<Level1>(); 
+            level2 = make_unique<Level1>(); 
             break;
         case 2:
-            level1 = new Level2();
-            level2 = new Level2();
+            level1 = make_unique<Level2>(); 
+            level2 = make_unique<Level2>(); 
             break;
         case 3:
-            level1 = new Level3();
-            level2 = new Level3();
+            level1 = make_unique<Level3>(); 
+            level2 = make_unique<Level3>(); 
             break;
         case 4:
-            level1 = new Level4();
-            level2 = new Level4();
+            level1 = make_unique<Level4>(); 
+            level2 = make_unique<Level4>(); 
             break;
     }
     
     // Create players
-    Player p1(level1, startLevel);
-    Player p2(level2, startLevel);
+    Player p1{move(level1), startLevel};
+    Player p2{move(level2), startLevel};
     
     // Create game (Subject)
     GameEngine game(move(p1), move(p2));

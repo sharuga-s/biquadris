@@ -6,7 +6,6 @@ import Block;
 import xwindow;
 
 import <memory>;
-
 using namespace std;
 
 // Forward declaration

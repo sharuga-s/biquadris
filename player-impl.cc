@@ -17,127 +17,151 @@ import Level3;
 import Level4;
 
 import <algorithm>;
+import <memory>;   // for unique_ptr and make_unique
 
-// WORK IN PROGRESS - if this is kept, player has to import ALL of level and subclasses
-void Player::rebuildLevel() {
-    // delete old Level
-    delete levelLogic;
-    levelLogic = nullptr;
-
-    // levelNumber boundaries
-    if (levelNumber < 0) levelNumber = 0;
-    if (levelNumber > 4) levelNumber = 4;
-
-    // construct appropriate concrete Level
-    if (levelNumber == 0) {
-        levelLogic = new Level0(levelLogic.getFileName());  // TODO: Use actual sequence file
-    } else if (levelNumber == 1) {
-        levelLogic = new Level1();
-    } else if (levelNumber == 2) {
-        levelLogic = new Level2();
-    } else if (levelNumber == 3) {
-        levelLogic = new Level3();
-    } else { // levelNumber == 4
-        levelLogic = new Level4();
+// =========================
+//  Helper: Create new block
+// =========================
+std::unique_ptr<Block> Player::createBlockFromType(char type) {
+    switch (type) {
+        case 'I': return make_unique<IBlock>(levelNumber);
+        case 'J': return make_unique<JBlock>(levelNumber);
+        case 'L': return make_unique<LBlock>(levelNumber);
+        case 'O': return make_unique<OBlock>(levelNumber);
+        case 'S': return make_unique<SBlock>(levelNumber);
+        case 'Z': return make_unique<ZBlock>(levelNumber);
+        case 'T': return make_unique<TBlock>(levelNumber);
+        case '*': return make_unique<StarBlock>(levelNumber);
     }
-
-    // re-apply heavy status based on new level
-    applyHeavy(currBlock);
-    applyHeavy(nextBlock);
+    return nullptr;
 }
 
-// helper fns -----------------------------------------------------------------
-void Player::applyHeavy(Block* b) const {
+// =========================
+//  Apply heavy logic
+// =========================
+void Player::applyHeavy(Block* b) {
     if (!b) return;
     bool heavy = levelLogic->isHeavy() || heavyEffects > 0;
     b->setHeavy(heavy);
-    heavyEffects++;
 }
 
-Block* Player::createBlockFromType(char type) {
-    switch (type) {
-        case 'I': return new IBlock(levelNumber);
-        case 'J': return new JBlock(levelNumber);
-        case 'L': return new LBlock(levelNumber);
-        case 'O': return new OBlock(levelNumber);
-        case 'S': return new SBlock(levelNumber);
-        case 'Z': return new ZBlock(levelNumber);
-        case 'T': return new TBlock(levelNumber);
-        case '*': return new StarBlock(levelNumber);
-        default: return nullptr;
+// =========================
+//  Rebuild Level on levelUp/down
+// =========================
+void Player::rebuildLevel() {
+    // Save sequence filename if coming from Level0
+    string seqFile = "";
+    if (auto* lvl0 = dynamic_cast<Level0*>(levelLogic.get())) {
+        seqFile = lvl0->getFileName();
     }
+
+    // Boundaries
+    if (levelNumber < 0) levelNumber = 0;
+    if (levelNumber > 4) levelNumber = 4;
+
+    // Replace levelLogic with new unique_ptr
+    switch (levelNumber) {
+        case 0:
+            if (seqFile.empty()) seqFile = "sequence1.txt";
+            levelLogic = make_unique<Level0>(seqFile);
+            break;
+        case 1:
+            levelLogic = make_unique<Level1>();
+            break;
+        case 2:
+            levelLogic = make_unique<Level2>();
+            break;
+        case 3:
+            levelLogic = make_unique<Level3>();
+            break;
+        case 4:
+            levelLogic = make_unique<Level4>();
+            break;
+    }
+
+    // Reapply heavy effect
+    applyHeavy(currBlock.get());
+    applyHeavy(nextBlock.get());
 }
 
+// =========================
+//  Spawn initial block pair
+// =========================
 void Player::spawnInitialBlocks() {
-    char type1 = levelLogic->generateNextBlockType();  
-    currBlock = createBlockFromType(type1);            
-    applyHeavy(currBlock);
+    char t1 = levelLogic->generateNextBlockType();
+    currBlock = createBlockFromType(t1);
+    applyHeavy(currBlock.get());
 
-    char type2 = levelLogic->generateNextBlockType();
-    nextBlock = createBlockFromType(type2);
-    applyHeavy(nextBlock);
+    char t2 = levelLogic->generateNextBlockType();
+    nextBlock = createBlockFromType(t2);
+    applyHeavy(nextBlock.get());
 
-    if (currBlock && !grid.isValid(currBlock)) {
+    if (currBlock && !grid.isValid(currBlock.get())) {
         isGameOver = true;
     }
 }
 
+// =========================
+//  Promote nextBlock → currBlock
+// =========================
 void Player::promoteNextBlock() {
-    delete currBlock;
-    currBlock = nextBlock;
+    currBlock = std::move(nextBlock);
 
     char nextType = levelLogic->generateNextBlockType();
     nextBlock = createBlockFromType(nextType);
-    applyHeavy(nextBlock);
+    applyHeavy(nextBlock.get());
 
     hasHeldThisTurn = false;
-    // Don't clear isBlind here - it's cleared in dropBlock()
 
-    if (currBlock && !grid.isValid(currBlock)) {
-        gameOver = true;
+    if (currBlock && !grid.isValid(currBlock.get())) {
+        isGameOver = true;
     }
 }
 
+// =========================
+//  Hold / Swap blocks
+// =========================
 void Player::holdBlock() {
     if (isGameOver || !currBlock) return;
     if (hasHeldThisTurn) return;
 
     if (!heldBlock) {
-        heldBlock = currBlock;
-        currBlock = nextBlock;
-        
+        heldBlock = std::move(currBlock);
+        currBlock = std::move(nextBlock);
+
         char nextType = levelLogic->generateNextBlockType();
         nextBlock = createBlockFromType(nextType);
-        applyHeavy(nextBlock);
+        applyHeavy(nextBlock.get());
     } else {
-        Block* temp = currBlock;
-        currBlock = heldBlock;
-        heldBlock = temp;
+        std::swap(currBlock, heldBlock);
     }
 
     hasHeldThisTurn = true;
 
-    if (!grid.isValid(currBlock)) {
+    if (currBlock && !grid.isValid(currBlock.get())) {
         isGameOver = true;
     }
 }
 
-void Player::clearAllBlocks() {
-    delete currBlock;
-    delete nextBlock;
-    delete heldBlock;
-    currBlock = nextBlock = heldBlock = nullptr;
+// =========================
+//  Constructor
+// =========================
+Player::Player(std::unique_ptr<Level> logic, int lvl)
+    : levelLogic(std::move(logic)),
+      levelNumber(lvl),
+      grid(18, 11) {
+
+    spawnInitialBlocks();
 }
 
-// ctor and dtor -----------------------------------------------------------------
-Player::Player(Level* logic, int lvl)
-    : levelLogic{logic}, levelNumber{lvl}, grid{18, 11} {
-        spawnInitialBlocks();
-}
+// =========================
+//  Destructor — defaulted!
+// =========================
+Player::~Player() = default;
 
-Player::~Player() { clearAllBlocks(); }
-
-// movement logic ----------------------------------------------------------------
+// =========================
+//  Movement
+// =========================
 void Player::moveBlockLeft() {
     if (!isGameOver && currBlock) currBlock->moveLeft(grid);
 }
@@ -158,16 +182,18 @@ void Player::rotateCCW() {
     if (!isGameOver && currBlock) currBlock->rotateCCW(grid);
 }
 
+// =========================
+//  DROP + scoring + heavy/level logic
+// =========================
 void Player::dropBlock() {
     if (isGameOver || !currBlock) return;
 
     while (currBlock->softDrop(grid)) {}
 
-    grid.placeBlock(currBlock);
+    grid.placeBlock(currBlock.get());
 
-    // 3. Clear blind effect IMMEDIATELY after dropping (before clearing rows)
     isBlind = false;
-    
+
     int numCleared = 0;
     grid.clearFullRows(numCleared);
 
@@ -178,103 +204,98 @@ void Player::dropBlock() {
 
     levelLogic->onBlockPlaced(numCleared > 0);
 
-    // check if special action triggered (2+ rows cleared)
     if (numCleared >= 2) {
         specialActionTriggered = true;
-        numSpecialActions = numCleared; // Store for later
+        numSpecialActions = numCleared;
     }
 
-    // spawn next block
     promoteNextBlock();
 }
 
-// getters and setters ----------------------------------------------------------
-Grid& Player:: getGrid() { return grid; }
-
+// =========================
+//  Getters
+// =========================
+Grid& Player::getGrid() { return grid; }
 const Grid& Player::getGrid() const { return grid; }
 
-unique_ptr<Block> Player::getCurrentBlock() const { return currBlock; }
-
-unique_ptr<Block> Player::getNextBlock()    const { return nextBlock; }
-
-unique_ptr<Block> Player::getHeldBlock()    const { return heldBlock; }
+Block* Player::getCurrentBlock() const { return currBlock.get(); }
+Block* Player::getNextBlock() const { return nextBlock.get(); }
+Block* Player::getHeldBlock() const { return heldBlock.get(); }
 
 int Player::getScore() const { return score; }
-
 int Player::getHiScore() const { return hiScore; }
 
-void Player::addScore(int ptsToAdd) {
-    score += ptsToAdd;
-    if (score > hiScore) {
-        hiScore = score;
-    }
+void Player::addScore(int pts) {
+    score += pts;
+    if (score > hiScore) hiScore = score;
 }
 
 int Player::getLevel() const { return levelNumber; }
 
-void Player::setLevel(Level* newLogic, int newLevelNum) {
-    delete levelLogic; // delete old level to prevent memory leak
-    levelLogic = newLogic;
-    levelNumber = newLevelNum;
+bool Player::getBlind() const { return isBlind; }
+void Player::setBlind(bool b) { isBlind = b; }
 
-    applyHeavy(currBlock);
-    applyHeavy(nextBlock);
-}
+Level* Player::getLevelLogic() const { return levelLogic.get(); }
 
-bool Player::getBlind() const{
-    return isBlind;
-}
+bool Player::isGameOver() const { return isGameOver; }
 
-void Player::setBlind(bool b){
-    isBlind = b;
-}
-
-unique_ptr<Level> Player::getLevelLogic() const {
-    return levelLogic;
-}
-
-// effects ----------------------------------------------------------------------
+// =========================
+//  Special effects
+// =========================
 void Player::applyEffect(SpecialAction* effect) {
     if (!effect || isGameOver) return;
     effect->apply(*this, grid);
+}
+
+void Player::incrementHeavyEffects() {
+    heavyEffects++;
+    applyHeavy(currBlock.get());
+    applyHeavy(nextBlock.get());
+}
+
+void Player::decrementHeavyEffects() {
+    if (heavyEffects > 0) heavyEffects--;
+    applyHeavy(currBlock.get());
+    applyHeavy(nextBlock.get());
 }
 
 bool Player::isHeavy() const {
     return levelLogic->isHeavy() || heavyEffects > 0;
 }
 
-// game logic --------------------------------------------------------------------
+// =========================
+//  Level up/down
+// =========================
 void Player::incLevel() {
-    ++levelNumber;
+    levelNumber++;
     if (levelNumber > 4) levelNumber = 4;
     rebuildLevel();
 }
 
 void Player::decLevel() {
-    --levelNumber;
+    levelNumber--;
     if (levelNumber < 0) levelNumber = 0;
     rebuildLevel();
 }
 
+// =========================
+//  Force next block
+// =========================
 void Player::forceNextBlock(char type) {
-    // delete current next block
-    delete nextBlock;
-    nextBlock = nullptr;
-
-    int lvl = levelNumber;
-
     nextBlock = createBlockFromType(type);
-
-    // ensure heavy rules still apply
-    applyHeavy(nextBlock);
+    applyHeavy(nextBlock.get());
 }
 
+// =========================
+//  Random mode toggle
+// =========================
 void Player::setRandomMode(bool enabled) {
-    if (levelLogic) {
-        levelLogic->setRandom(enabled);
-    }
+    if (levelLogic) levelLogic->setRandom(enabled);
 }
 
+// =========================
+//  Full reset between games
+// =========================
 void Player::reset() {
     grid.reset();
 
@@ -283,7 +304,12 @@ void Player::reset() {
     heavyEffects = 0;
     isGameOver = false;
     hasHeldThisTurn = false;
+    specialActionTriggered = false;
+    numSpecialActions = 0;
 
-    clearAllBlocks();
+    currBlock.reset();
+    nextBlock.reset();
+    heldBlock.reset();
+
     spawnInitialBlocks();
 }

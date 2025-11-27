@@ -5,6 +5,8 @@ import Grid;
 import SpecialAction;
 import Block;
 
+import <memory>;
+
 using namespace std;
 
 // other imports here do not forget
@@ -50,13 +52,12 @@ export class Player {
         // helper functions
         void spawnInitialBlocks();
         void promoteNextBlock();
-        void applyHeavy(Block* b) const;
+        void applyHeavy(Block* b);
         void clearAllBlocks();
         unique_ptr<Block> createBlockFromType(char type);
     public:
-        // ctor and dtor
+        // ctor 
         Player(Level* levelImpl, int levelNum);
-        ~Player();
 
         // movement logic for a block
         void moveBlockLeft();
@@ -84,6 +85,9 @@ export class Player {
 
         // effects
         void applyEffect(SpecialAction* effect); 
+        void incrementHeavyEffects();  
+        void decrementHeavyEffects();  
+        bool isHeavy() const; 
 
         // game logic
         void incLevel(); // move level up
@@ -91,4 +95,9 @@ export class Player {
         void forceNextBlock(char type); // FORCE next block special action
         void setRandomMode(bool enabled);
         void reset();
+
+        // special action state
+        bool hasSpecialAction() const { return specialActionTriggered; }
+        void clearSpecialAction() { specialActionTriggered = false; }
+        int getNumSpecialActions() const { return numSpecialActions; }
 };
