@@ -97,9 +97,9 @@ void Grid::collapseRows() {
     }
 }
 
-void Grid::applyBlind(bool on) {
-    blindActive = on;
-}
+// void Grid::applyBlind(bool on) {
+//     blindActive = on;
+// }
 
 void Grid::placeBlock(Block* b) {
     // update: absolute positions must be returned to align wiht new block impl

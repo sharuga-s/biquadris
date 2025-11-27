@@ -71,7 +71,15 @@ void GameEngine::executeSingleCommand(const string& cmd) {
         p.setRandomMode(true);
     } else if (cmd == "norandom") {
         p.setRandomMode(false);
-    } else if (cmd == "blind") {
+    } else if (cmd == "restart") {
+        // reset whole game state but stay in the program
+        for (auto& pl : players) {
+            pl.reset();          // clear grid, score, blocks, etc.
+        }
+        gameOver = false;
+        currPlayer = 0;           // player 1 starts again
+    }
+    else if (cmd == "blind") {
         // apply Blind to the *other* player
         Blind effect;
         otherPlayer().applyEffect(&effect);

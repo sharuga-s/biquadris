@@ -193,11 +193,11 @@ Grid& Player:: getGrid() { return grid; }
 
 const Grid& Player::getGrid() const { return grid; }
 
-Block* Player::getCurrentBlock() const { return currBlock; }
+unique_ptr<Block> Player::getCurrentBlock() const { return currBlock; }
 
-Block* Player::getNextBlock()    const { return nextBlock; }
+unique_ptr<Block> Player::getNextBlock()    const { return nextBlock; }
 
-Block* Player::getHeldBlock()    const { return heldBlock; }
+unique_ptr<Block> Player::getHeldBlock()    const { return heldBlock; }
 
 int Player::getScore() const { return score; }
 
@@ -229,7 +229,7 @@ void Player::setBlind(bool b){
     isBlind = b;
 }
 
-Level* Player::getLevelLogic() const {
+unique_ptr<Level> Player::getLevelLogic() const {
     return levelLogic;
 }
 

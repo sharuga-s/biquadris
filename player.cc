@@ -5,6 +5,8 @@ import Grid;
 import SpecialAction;
 import Block;
 
+using namespace std;
+
 // other imports here do not forget
 
 /*
@@ -33,13 +35,13 @@ export class Player {
         // fields 
         int score = 0; // player curr score
         int hiScore = 0; // player maximum in one 'session'
-        Level* levelLogic; // stores level logic
+        unique_ptr<Level> levelLogic; // stores level logic
         int levelNumber; 
         Grid grid; // owns-a
         // blocks owned by player at an instnance
-        Block* currBlock = nullptr;
-        Block* nextBlock = nullptr;
-        Block* heldBlock = nullptr;
+        unique_ptr<Level> currBlock = nullptr;
+        unique_ptr<Block> nextBlock = nullptr;
+        unique_ptr<Block> heldBlock = nullptr;
         bool hasHeldThisTurn = false; // esnsure at most one hold per turn
         bool isBlind = false;
         bool isGameOver = false;
@@ -50,7 +52,7 @@ export class Player {
         void promoteNextBlock();
         void applyHeavy(Block* b) const;
         void clearAllBlocks();
-        Block* createBlockFromType(char type);
+        unique_ptr<Block> createBlockFromType(char type);
     public:
         // ctor and dtor
         Player(Level* levelImpl, int levelNum);
@@ -68,9 +70,9 @@ export class Player {
         // accessors/getters and setters
         Grid& getGrid();
         const Grid& getGrid() const;
-        Block* getCurrentBlock() const;
-        Block* getNextBlock() const;
-        Block* getHeldBlock() const;
+        unique_ptr<Block> getCurrentBlock() const;
+        unique_ptr<Block> getNextBlock() const;
+        unique_ptr<Block> getHeldBlock() const;
         int getScore() const;
         int getHiScore() const;
         int getLevel() const;
@@ -78,7 +80,7 @@ export class Player {
         void addScore(int ptsToAdd);
         bool getBlind() const;
         void setBlind(bool b);
-        Level* Player::getLevelLogic() const;
+        unique_ptr<Level> Player::getLevelLogic() const;
 
         // effects
         void applyEffect(SpecialAction* effect); 

@@ -9,7 +9,7 @@ using namespace std;
 export class Grid {
     int rows;
     int cols;
-    bool blindActive = false;
+    // bool blindActive = false;
 
     vector<vector<Cell>> theGrid;
 
@@ -25,7 +25,7 @@ public:
     void collapseRows();
 
     // specialAction logic
-    void applyBlind(bool on);
+    // void applyBlind(bool on);
     void placeBlock(Block* b);
     void clearFullRows(int& numCleared);
 };

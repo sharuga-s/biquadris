@@ -23,6 +23,9 @@ CommandInterpreter::CommandInterpreter() {
         "random",
         "norandom",
         "sequence",
+        "hold",
+        "blind",
+        "heavy",
         "I", "J", "L", "O", "S", "Z", "T"
     };
 }
