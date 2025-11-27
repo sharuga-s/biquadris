@@ -23,4 +23,5 @@ public:
     void readFile(string file) override;
     void genBlocksFromFile() override;
     void setRandom(bool enabled) override;
+    string getFileName() const override;
 };

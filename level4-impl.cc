@@ -27,6 +27,10 @@ Level4::Level4()
     : levelNumber{4}, noClearStreak{0}
 {}
 
+string Level4::getFileName const {
+    return "";
+}
+
 bool Level4::isHeavy() const {
     return true;
 }
@@ -57,7 +61,7 @@ char Level4::generateNextBlockType() {
     // special star block after 5 turns without clearing any rows
     if (noClearStreak == 5) {
         noClearStreak = 0;
-        return new StarBlock(levelNumber); //NOTE: we need to make sure that this block gets placed in the center col
+        return '*'; //NOTE: we need to make sure that this block gets placed in the center col
     }
 
     //same random distribution as Level 3

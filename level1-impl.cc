@@ -13,6 +13,10 @@ Level1::Level1()
     : levelNumber{1} 
 {}
 
+string Level0::getFileName const {
+    return "";
+}
+
 bool Level1::isHeavy() const {
     return false;
 }

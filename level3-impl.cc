@@ -25,6 +25,10 @@ Level3::Level3()
     : levelNumber{3}
 {}
 
+string Level3::getFileName const {
+    return "";
+}
+
 bool Level3::isHeavy() const {
     return true;
 }
@@ -41,7 +45,7 @@ void Level3::genBlocksFromFile() {
     // Level 3 does not use sequence files
 }
 
-Block* Level3::getNextBlock() {
+char Level3::getNextBlock() {
     if (!randomMode) {
         // TODO: use sequence from file via genBlocksFromFile()
     }

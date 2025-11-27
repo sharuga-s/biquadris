@@ -23,6 +23,10 @@ Level0::Level0(string file)
     }
 }
 
+string Level0::getFileName const {
+    return filename;
+}
+
 bool Level0::isHeavy() const {
     return false;
 }

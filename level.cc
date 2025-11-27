@@ -6,6 +6,7 @@ import <string>;
 
 export class Level {
 public:
+    
     virtual ~Level() = default;
 
     //changed from Block* to char to avoid coupling
@@ -23,4 +24,6 @@ public:
     virtual void genBlocksFromFile() = 0;
     // new for levels 3 and 4
     virtual void setRandom(bool enabled) = 0;
+
+    virtual string getFileName() const = 0;
 };
