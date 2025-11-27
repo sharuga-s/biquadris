@@ -50,7 +50,7 @@ export class Player {
         void promoteNextBlock();
         void applyHeavy(Block* b) const;
         void clearAllBlocks();
-
+        Block* createBlockFromType(char type);
     public:
         // ctor and dtor
         Player(Level* levelImpl, int levelNum);

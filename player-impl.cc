@@ -53,15 +53,31 @@ void Player::applyHeavy(Block* b) const {
     b->setHeavy(heavy);
 }
 
+Block* Player::createBlockFromType(char type) {
+    switch (type) {
+        case 'I': return new IBlock(levelNumber);
+        case 'J': return new JBlock(levelNumber);
+        case 'L': return new LBlock(levelNumber);
+        case 'O': return new OBlock(levelNumber);
+        case 'S': return new SBlock(levelNumber);
+        case 'Z': return new ZBlock(levelNumber);
+        case 'T': return new TBlock(levelNumber);
+        case '*': return new StarBlock(levelNumber);
+        default: return nullptr;
+    }
+}
+
 void Player::spawnInitialBlocks() {
-    currBlock = levelLogic->generateNextBlock();
+    char type1 = levelLogic->generateNextBlockType();  
+    currBlock = createBlockFromType(type1);            
     applyHeavy(currBlock);
 
-    nextBlock = levelLogic->generateNextBlock();
+    char type2 = levelLogic->generateNextBlockType();
+    nextBlock = createBlockFromType(type2);
     applyHeavy(nextBlock);
 
     if (currBlock && !grid.isValid(currBlock)) {
-        isGameOver = true;
+        gameOver = true;
     }
 }
 
@@ -69,22 +85,40 @@ void Player::promoteNextBlock() {
     delete currBlock;
     currBlock = nextBlock;
 
-    nextBlock = levelLogic->generateNextBlockType();
+    char nextType = levelLogic->generateNextBlockType();
+    nextBlock = createBlockFromType(nextType);
     applyHeavy(nextBlock);
 
     hasHeldThisTurn = false;
     isBlind = false;
 
     if (currBlock && !grid.isValid(currBlock)) {
-        isGameOver = true;
+        gameOver = true;
     }
 }
 
-void Player::clearAllBlocks() {
-    delete currBlock;
-    delete nextBlock;
-    delete heldBlock;
-    currBlock = nextBlock = heldBlock = nullptr;
+void Player::holdBlock() {
+    if (gameOver || !currBlock) return;
+    if (hasHeldThisTurn) return;
+
+    if (!heldBlock) {
+        heldBlock = currBlock;
+        currBlock = nextBlock;
+        
+        char nextType = levelLogic->generateNextBlockType();
+        nextBlock = createBlockFromType(nextType);
+        applyHeavy(nextBlock);
+    } else {
+        Block* temp = currBlock;
+        currBlock = heldBlock;
+        heldBlock = temp;
+    }
+
+    hasHeldThisTurn = true;
+
+    if (!grid.isValid(currBlock)) {
+        gameOver = true;
+    }
 }
 
 // ctor and dtor -----------------------------------------------------------------
@@ -224,33 +258,7 @@ void Player::forceNextBlock(char type) {
 
     int lvl = levelNumber;
 
-    switch (type) {
-        case 'I':
-            nextBlock = new IBlock(lvl);
-            break;
-        case 'J':
-            nextBlock = new JBlock(lvl);
-            break;
-        case 'L':
-            nextBlock = new LBlock(lvl);
-            break;
-        case 'O':
-            nextBlock = new OBlock(lvl);
-            break;
-        case 'S':
-            nextBlock = new SBlock(lvl);
-            break;
-        case 'Z':
-            nextBlock = new ZBlock(lvl);
-            break;
-        case 'T':
-            nextBlock = new TBlock(lvl);
-            break;
-        default:
-            // invalid type; leave nextBlock as nullptr or regenerate from level
-            nextBlock = levelLogic->getNextBlock();
-            break;
-    }
+    nextBlock = createBlockFromType(type);
 
     // ensure heavy rules still apply
     applyHeavy(nextBlock);
