@@ -14,10 +14,7 @@ export class Level4 : public Level {
         char generateNextBlockType() override;
         bool isHeavy() const override;
 
-        void onBlockPlaced(bool clearedRows) override;
+        void onBlockPlaced(bool clearedRows);
 
-        void readFile(std::string file) override;
-        void genBlocksFromFile() override;
         void setRandom(bool enabled) override;
-        string getFileName() const override;
 };

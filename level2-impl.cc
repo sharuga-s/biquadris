@@ -9,26 +9,10 @@ using namespace std;
 
 Level2::Level2()
     : levelNumber{2}
-{}
-
-string Level2::getFileName const {
-    return "";
-}
+{}}
 
 bool Level2::isHeavy() const {
     return false;
-}
-
-void Level2::onBlockPlaced(bool clearedRows) {
-    // Level 2 does nothing here
-}
-
-void Level2::readFile(string) {
-    // Level 2 does not use sequence files
-}
-
-void Level2::genBlocksFromFile() {
-    // Level 2 does not use sequence files
 }
 
 char Level2::generateNextBlockType() {

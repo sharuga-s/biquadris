@@ -20,8 +20,8 @@ public:
     bool isHeavy() const override;
     void onBlockPlaced(bool clearedRows) override;
 
-    void readFile(string file) override;
-    void genBlocksFromFile() override;
+    void readFile(string file);
+    void genBlocksFromFile();
     void setRandom(bool enabled) override;
-    string getFileName() const override;
+    string getFileName() const;
 };

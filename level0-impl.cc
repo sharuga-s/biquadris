@@ -31,10 +31,6 @@ bool Level0::isHeavy() const {
     return false;
 }
 
-void Level0::onBlockPlaced(bool clearedRows) {
-    // Level 0 does nothing
-}
-
 void Level0::readFile(string file) {
     filename = file;
     genBlocksFromFile();

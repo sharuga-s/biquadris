@@ -33,18 +33,6 @@ bool Level3::isHeavy() const {
     return true;
 }
 
-void Level3::onBlockPlaced(bool clearedRows) {
-    // Level 3 does nothing special here
-}
-
-void Level3::readFile(string) {
-    // Level 3 does not use sequence files
-}
-
-void Level3::genBlocksFromFile() {
-    // Level 3 does not use sequence files
-}
-
 char Level3::getNextBlock() {
     if (!randomMode) {
         // TODO: use sequence from file via genBlocksFromFile()
