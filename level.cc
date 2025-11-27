@@ -2,6 +2,8 @@ export module Level;
 
 import <string>;
 
+using namespace std;
+
 // note: might need an impl file bc w/o it its bad design...
 
 export class Level {
@@ -23,7 +25,7 @@ export class Level {
         // Load a sequence file (used by 0, 3, 4; no-op for 1, 2)
         virtual void readFile(string file) = 0;
 
-        virtual void setSequenceFile(const std::string&) {}   // level1/2 ignore
-        virtual std::string getSequenceFile() const { return ""; }
+        virtual void setSequenceFile(const string&) {}   // level1/2 ignore
+        virtual string getSequenceFile() const { return ""; }
 
 };

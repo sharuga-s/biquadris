@@ -1,6 +1,7 @@
 module OBlock;
 
-import OBlock;
+import <utility>;
+import <vector>;
 
 OBlock::OBlock(int level) {
     levelGenerated = level;

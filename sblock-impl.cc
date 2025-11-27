@@ -1,6 +1,7 @@
 module SBlock;
 
-import SBlock;
+import <utility>;
+import <vector>;
 
 SBlock::SBlock(int level) {
     levelGenerated = level;

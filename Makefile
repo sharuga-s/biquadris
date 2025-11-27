@@ -1,184 +1,96 @@
-CXX = g++
-CXXFLAGS = -std=c++20 -Wall -g -MMD
+CXX = g++-14 -std=c++20 -fmodules-ts
+CXXFLAGS = -Wall -g
+LDFLAGS = -lX11
 EXEC = biquadris
-OBJECTS = main.o \
-          block-impl.o block.o \
-          cell-impl.o cell.o \
-          commandinterpreter-impl.o commandinterpreter.o \
-          display.o \
-          game-engine-impl.o game-engine.o \
-          graphics-display-impl.o graphics-display.o \
-          grid-impl.o grid.o \
-          text-display-impl.o text-display.o \
-          subject.o \
-          player-impl.o player.o \
-          level.o \
-          level0-impl.o level0.o \
-          level1-impl.o level1.o \
-          level2-impl.o level2.o \
-          level3-impl.o level3.o \
-          level4-impl.o level4.o \
-          level-factory-impl.o level-factory.o \
-          iblock-impl.o iblock.o \
-          jblock-impl.o jblock.o \
-          lblock-impl.o lblock.o \
-          oblock-impl.o oblock.o \
-          sblock-impl.o sblock.o \
-          zblock-impl.o zblock.o \
-          tblock-impl.o tblock.o \
-          starblock-impl.o starblock.o \
-          special-action.o \
-          blind-impl.o blind.o \
-          heavy-impl.o heavy.o \
-          window-impl.o window.o
 
-DEPENDS = ${OBJECTS:.o=.d}
+.PHONY: all clean cleanall headers
 
-# X11 libraries for graphics
-LIBS = -lX11
+all: headers $(EXEC)
 
-${EXEC}: ${OBJECTS}
-	${CXX} ${CXXFLAGS} ${OBJECTS} -o ${EXEC} ${LIBS}
+# Precompile standard library headers
+headers:
+	@echo "Precompiling standard library headers..."
+	@mkdir -p gcm.cache
+	$(CXX) -x c++-system-header iostream
+	$(CXX) -x c++-system-header vector
+	$(CXX) -x c++-system-header memory
+	$(CXX) -x c++-system-header utility
+	$(CXX) -x c++-system-header algorithm
+	$(CXX) -x c++-system-header fstream
+	$(CXX) -x c++-system-header sstream
+	$(CXX) -x c++-system-header cstdlib
+	$(CXX) -x c++-system-header ctime
+	$(CXX) -x c++-system-header cctype
+	$(CXX) -x c++-system-header string
 
-# ============================================================================
-# MODULE INTERFACE UNITS - Must be compiled in dependency order
-# ============================================================================
-
-# Base modules (no dependencies)
-cell.o: cell.cc
-	${CXX} ${CXXFLAGS} -c $
-
-level.o: level.cc
-	${CXX} ${CXXFLAGS} -c $
-
-special-action.o: special-action.cc
-	${CXX} ${CXXFLAGS} -c $
-
-commandinterpreter.o: commandinterpreter.cc
-	${CXX} ${CXXFLAGS} -c $
-
-window.o: window.cc
-	${CXX} ${CXXFLAGS} -c $
-
-# Modules depending on Cell
-block.o: block.cc cell.o
-	${CXX} ${CXXFLAGS} -c $
-
-# Modules depending on Cell and Block
-grid.o: grid.cc cell.o block.o
-	${CXX} ${CXXFLAGS} -c $
-
-# Display modules
-display.o: display.cc grid.o block.o
-	${CXX} ${CXXFLAGS} -c $
-
-subject.o: subject.cc display.o
-	${CXX} ${CXXFLAGS} -c $
-
-text-display.o: text-display.cc display.o grid.o block.o
-	${CXX} ${CXXFLAGS} -c $
-
-graphics-display.o: graphics-display.cc display.o grid.o block.o window.o
-	${CXX} ${CXXFLAGS} -c $
-
-# Level modules
-level0.o: level0.cc level.o
-	${CXX} ${CXXFLAGS} -c $
-
-level1.o: level1.cc level.o
-	${CXX} ${CXXFLAGS} -c $
-
-level2.o: level2.cc level.o
-	${CXX} ${CXXFLAGS} -c $
-
-level3.o: level3.cc level.o
-	${CXX} ${CXXFLAGS} -c $
-
-level4.o: level4.cc level.o
-	${CXX} ${CXXFLAGS} -c $
-
-level-factory.o: level-factory.cc level.o
-	${CXX} ${CXXFLAGS} -c $
-
-# SpecialAction modules
-blind.o: blind.cc special-action.o
-	${CXX} ${CXXFLAGS} -c $
-
-heavy.o: heavy.cc special-action.o
-	${CXX} ${CXXFLAGS} -c $
-
-# Block type modules
-iblock.o: iblock.cc block.o
-	${CXX} ${CXXFLAGS} -c $
-
-jblock.o: jblock.cc block.o
-	${CXX} ${CXXFLAGS} -c $
-
-lblock.o: lblock.cc block.o
-	${CXX} ${CXXFLAGS} -c $
-
-oblock.o: oblock.cc block.o
-	${CXX} ${CXXFLAGS} -c $
-
-sblock.o: sblock.cc block.o
-	${CXX} ${CXXFLAGS} -c $
-
-zblock.o: zblock.cc block.o
-	${CXX} ${CXXFLAGS} -c $
-
-tblock.o: tblock.cc block.o
-	${CXX} ${CXXFLAGS} -c $
-
-starblock.o: starblock.cc block.o
-	${CXX} ${CXXFLAGS} -c $
-
-# Player module
-player.o: player.cc level.o grid.o special-action.o block.o
-	${CXX} ${CXXFLAGS} -c $
-
-# GameEngine module
-game-engine.o: game-engine.cc player.o subject.o commandinterpreter.o
-	${CXX} ${CXXFLAGS} -c $
-
-# ============================================================================
-# IMPLEMENTATION FILES - Compiled after their interface units
-# ============================================================================
-
-%-impl.o: %-impl.cc %.o
-	${CXX} ${CXXFLAGS} -c $
-
-# Special cases that need extra dependencies
-level-factory-impl.o: level-factory-impl.cc level-factory.o level0.o level1.o level2.o level3.o level4.o
-	${CXX} ${CXXFLAGS} -c $
-
-player-impl.o: player-impl.cc player.o iblock.o jblock.o lblock.o oblock.o sblock.o zblock.o tblock.o starblock.o level-factory.o
-	${CXX} ${CXXFLAGS} -c $
-
-game-engine-impl.o: game-engine-impl.cc game-engine.o player.o subject.o commandinterpreter.o blind.o heavy.o level.o
-	${CXX} ${CXXFLAGS} -c $
-
-text-display-impl.o: text-display-impl.cc text-display.o grid.o block.o cell.o game-engine.o player.o
-	${CXX} ${CXXFLAGS} -c $
-
-graphics-display-impl.o: graphics-display-impl.cc graphics-display.o display.o grid.o block.o cell.o game-engine.o player.o window.o
-	${CXX} ${CXXFLAGS} -c $
-
-# ============================================================================
-# MAIN
-# ============================================================================
-
-main.o: main.cc game-engine.o player.o text-display.o graphics-display.o
-	${CXX} ${CXXFLAGS} -c $
-
-# ============================================================================
-# UTILITY TARGETS
-# ============================================================================
-
--include ${DEPENDS}
-
-.PHONY: clean
+# Build in correct dependency order
+$(EXEC):
+	@echo "Building base modules (no dependencies)..."
+	$(CXX) $(CXXFLAGS) -c cell.cc
+	$(CXX) $(CXXFLAGS) -c block.cc
+	$(CXX) $(CXXFLAGS) -c level.cc
+	
+	@echo "Building grid (depends on Cell, Block)..."
+	$(CXX) $(CXXFLAGS) -c grid.cc
+	
+	@echo "Building display (depends on Grid, Block)..."
+	$(CXX) $(CXXFLAGS) -c display.cc
+	
+	@echo "Building subject (depends on Display)..."
+	$(CXX) $(CXXFLAGS) -c subject.cc
+	
+	@echo "Building block types (depend on Block)..."
+	$(CXX) $(CXXFLAGS) -c iblock.cc jblock.cc lblock.cc oblock.cc sblock.cc tblock.cc zblock.cc starblock.cc
+	
+	@echo "Building level types (depend on Level)..."
+	$(CXX) $(CXXFLAGS) -c level0.cc level1.cc level2.cc level3.cc level4.cc
+	
+	@echo "Building level factory (depends on Level types)..."
+	$(CXX) $(CXXFLAGS) -c level-factory.cc
+	
+	@echo "Building player (depends on Level, Grid, Block types)..."
+	$(CXX) $(CXXFLAGS) -c player.cc
+	
+	@echo "Building special-action (depends on Player, Grid)..."
+	$(CXX) $(CXXFLAGS) -c special-action.cc
+	
+	@echo "Building special actions (depend on SpecialAction, Player, Grid)..."
+	$(CXX) $(CXXFLAGS) -c blind.cc heavy.cc
+	
+	@echo "Building command interpreter..."
+	$(CXX) $(CXXFLAGS) -c commandinterpreter.cc
+	
+	@echo "Building game engine (depends on Player, Subject, CommandInterpreter)..."
+	$(CXX) $(CXXFLAGS) -c game-engine.cc
+	
+	@echo "Building window..."
+	$(CXX) $(CXXFLAGS) -c window.cc
+	
+	@echo "Building displays (depend on Display, GameEngine, Player, Grid, Block)..."
+	$(CXX) $(CXXFLAGS) -c text-display.cc graphics-display.cc
+	
+	@echo "Building implementations..."
+	$(CXX) $(CXXFLAGS) -c cell-impl.cc block-impl.cc grid-impl.cc
+	$(CXX) $(CXXFLAGS) -c iblock-impl.cc jblock-impl.cc lblock-impl.cc oblock-impl.cc
+	$(CXX) $(CXXFLAGS) -c sblock-impl.cc tblock-impl.cc zblock-impl.cc starblock-impl.cc
+	$(CXX) $(CXXFLAGS) -c level0-impl.cc level1-impl.cc level2-impl.cc level3-impl.cc level4-impl.cc
+	$(CXX) $(CXXFLAGS) -c level-factory-impl.cc
+	$(CXX) $(CXXFLAGS) -c player-impl.cc
+	$(CXX) $(CXXFLAGS) -c blind-impl.cc heavy-impl.cc
+	$(CXX) $(CXXFLAGS) -c commandinterpreter-impl.cc
+	$(CXX) $(CXXFLAGS) -c game-engine-impl.cc
+	$(CXX) $(CXXFLAGS) -c window-impl.cc
+	$(CXX) $(CXXFLAGS) -c text-display-impl.cc graphics-display-impl.cc
+	
+	@echo "Building main..."
+	$(CXX) $(CXXFLAGS) -c main.cc
+	
+	@echo "Linking..."
+	$(CXX) $(CXXFLAGS) *.o $(LDFLAGS) -o $(EXEC)
+	@echo "Build complete!"
 
 clean:
-	rm -f ${OBJECTS} ${EXEC} ${DEPENDS}
-	rm -rf gcm.cache
-	
+	-rm -f $(EXEC) *.o
+
+cleanall: clean
+	-rm -rf gcm.cache

@@ -1,7 +1,5 @@
 module CommandInterpreter;
 
-import CommandInterpreter;
-
 import <fstream>;
 import <sstream>;
 import <string>;

@@ -24,10 +24,10 @@ export class GameEngine : public Subject {  // Inherit from Subject!
         void executeSingleCommand(const string& cmd);
         void executeSequenceFile(const string& filename);
     public:
-        GameEngine(Player p1, Player p2);
+        GameEngine(int level1, const string& seq1, int level2, const string& seq2);
         void start();
         void end();
-        void handleCommand(string cmd);
+        void handleCommand(const std::string& cmd);
         
         // Public getters for observers to access state
         const Player& getPlayer1() const { return players[0]; }

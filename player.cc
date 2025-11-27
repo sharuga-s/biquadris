@@ -2,7 +2,6 @@ export module Player;
 
 import Level;
 import Grid;
-import SpecialAction;
 import Block;
 
 import <memory>;
@@ -32,6 +31,8 @@ relationships:
 - HAS-A [composition] Grid
 - HAS-A [composition] Level 
 */
+
+// class SpecialAction;
 
 export class Player {
     private:
@@ -63,6 +64,13 @@ export class Player {
         Player(int levelNum, const string& sequenceFile = "");
         ~Player() = default; // dtor
 
+        // non-copyable but movable (needed for std::vector<Player>)
+        Player(const Player&) = delete;
+        Player& operator=(const Player&) = delete;
+
+        Player(Player&&) noexcept = default;
+        Player& operator=(Player&&) noexcept = default;
+
         // movement logic for a block
         void moveBlockLeft();
         void moveBlockRight();
@@ -85,10 +93,10 @@ export class Player {
         bool getBlind() const;
         void setBlind(bool b);
         Level* getLevelLogic() const;
-        bool isGameOver() const;
+        bool getGameOver() const;
 
         // effects
-        void applyEffect(SpecialAction* effect); 
+        void applyEffect(void* effect); 
         void incrementHeavyEffects();  
         void decrementHeavyEffects();  
         bool isHeavy() const; 

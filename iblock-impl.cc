@@ -1,6 +1,7 @@
 module IBlock;
 
-import IBlock;
+import <utility>;
+import <vector>;
 
 IBlock::IBlock(int level) {
     levelGenerated = level;

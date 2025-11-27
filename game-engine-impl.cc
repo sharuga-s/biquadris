@@ -16,10 +16,11 @@ import <vector>;
 
 using namespace std;
 
-GameEngine::GameEngine(Player p1, Player p2)
+GameEngine::GameEngine(int level1, const string& seq1, int level2, const string& seq2)
     : currPlayer{0}, ci{}, gameOver{false} {
-        players.push_back(move(p1));
-        players.push_back(move(p2));
+        // Construct players directly in the vector using emplace_back
+        players.emplace_back(level1, seq1);
+        players.emplace_back(level2, seq2);
 }
 
 Player& GameEngine::currentPlayer() {
@@ -56,7 +57,7 @@ void GameEngine::executeSingleCommand(const string& cmd) {
     else if (cmd == "drop") {
         p.dropBlock();
 
-        if (p.isGameOver()) {
+        if (p.getGameOver()) {
             gameOver = true;
         } else {
             switchTurns();
@@ -131,10 +132,10 @@ void GameEngine::end() {
     cout << "Final Score P2: " << players[1].getScore() << '\n';
 }
 
-void GameEngine::handleCommand(const string& rawCmd) {
+void GameEngine::handleCommand(const string& cmd) {
     if (gameOver) return;
 
-    string expanded = ci.parse(rawCmd);
+    string expanded = ci.parse(cmd);
     if (expanded.empty()) return;
 
     istringstream iss{expanded};

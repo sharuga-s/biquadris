@@ -1,6 +1,7 @@
 module StarBlock;
 
-import StarBlock;
+import <utility>;
+import <vector>;
 
 StarBlock::StarBlock(int level) {
     levelGenerated = level;

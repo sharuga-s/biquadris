@@ -49,7 +49,7 @@ int main(int argc, char* argv[]) {
     Player p2{startLevel, scriptFile2};
     
     // Create game (Subject)
-    GameEngine game(move(p1), move(p2));
+    GameEngine game(startLevel, scriptFile1, startLevel, scriptFile2);
     
     // Create displays (Observers)
     TextDisplay textDisplay(&game);

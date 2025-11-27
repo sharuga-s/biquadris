@@ -1,7 +1,5 @@
 module Player;
 
-using namespace std;
-
 import IBlock;
 import JBlock;
 import LBlock;
@@ -11,10 +9,13 @@ import ZBlock;
 import TBlock;
 import StarBlock;
 import LevelFactory;  
+import SpecialAction;
 
 import <algorithm>;
 import <memory>;
 import <string>;
+
+using namespace std;
 
 // =========================
 //  Helper: Create new block
@@ -298,14 +299,15 @@ void Player::setBlind(bool b) { isBlind = b; }
 
 Level* Player::getLevelLogic() const { return levelLogic.get(); }
 
-bool Player::isGameOver() const { return isGameOver; }
+bool Player::getGameOver() const { return isGameOver; }
 
 // =========================
 //  Special effects
 // =========================
-void Player::applyEffect(SpecialAction* effect) {
+void Player::applyEffect(void* effect) {
     if (!effect || isGameOver) return;
-    effect->apply(*this, grid);
+    SpecialAction* specialAction = static_cast<SpecialAction*>(effect);
+    specialAction->apply(*this, grid);
 }
 
 void Player::incrementHeavyEffects() {

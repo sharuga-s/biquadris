@@ -1,6 +1,7 @@
 module ZBlock;
 
-import ZBlock;
+import <utility>;
+import <vector>;
 
 ZBlock::ZBlock(int level) {
     levelGenerated = level;

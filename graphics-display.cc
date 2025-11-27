@@ -4,12 +4,11 @@ import Display;
 import Grid;
 import Block;
 import xwindow;
+import GameEngine;
 
 import <memory>;
-using namespace std;
 
-// Forward declaration
-export class GameEngine;
+using namespace std;
 
 export class GraphicsDisplay : public Display {
 private:

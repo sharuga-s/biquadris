@@ -1,6 +1,7 @@
 module LBlock;
 
-import LBlock;
+import <utility>;
+import <vector>;
 
 LBlock::LBlock(int level) {
     levelGenerated = level;

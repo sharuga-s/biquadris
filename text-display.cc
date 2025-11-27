@@ -3,9 +3,7 @@ export module TextDisplay;
 import Display;
 import Grid;
 import Block;
-
-// Forward declaration to avoid circular dependency
-export class GameEngine;
+import GameEngine;
 
 export class TextDisplay : public Display {
 private:

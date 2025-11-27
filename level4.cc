@@ -1,7 +1,11 @@
 export module Level4;
 
 import Level;
+
 import <string>;
+import <vector>;
+
+using namespace std;
 
 export class Level4 : public Level {
     private:

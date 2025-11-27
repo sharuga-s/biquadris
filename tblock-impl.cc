@@ -1,6 +1,7 @@
 module TBlock;
 
-import TBlock;
+import <utility>;
+import <vector>;
 
 TBlock::TBlock(int level) {
     levelGenerated = level;

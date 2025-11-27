@@ -1,6 +1,7 @@
 module JBlock;
 
-import JBlock;
+import <utility>;
+import <vector>;
 
 JBlock::JBlock(int level) {
     levelGenerated = level;
