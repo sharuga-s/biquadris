@@ -27,10 +27,6 @@ Level4::Level4()
     : levelNumber{4}, noClearStreak{0}
 {}
 
-string Level4::getFileName const {
-    return "";
-}
-
 bool Level4::isHeavy() const {
     return true;
 }
@@ -43,14 +39,6 @@ void Level4::onBlockPlaced(bool clearedRows) {
         //if not rows were cleared, we increment our streak to keep track of how many turns go by without clearing rows
         noClearStreak = noClearStreak + 1;
     }
-}
-
-void Level4::readFile(string) {
-    // Level 4 ignores sequence files
-}
-
-void Level4::genBlocksFromFile() {
-    // Level 4 ignores sequence files
 }
 
 char Level4::generateNextBlockType() {

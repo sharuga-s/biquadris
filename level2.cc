@@ -15,10 +15,5 @@ export class Level2 : public Level {
         char generateNextBlockType() override;
         bool isHeavy() const override;
 
-        void onBlockPlaced(bool clearedRows) override;
-
-        void readFile(string file) override;
-        void genBlocksFromFile() override;
         void setRandom(bool enabled) override;
-        string getFileName() const override;
 };

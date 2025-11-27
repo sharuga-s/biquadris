@@ -13,24 +13,12 @@ Level1::Level1()
     : levelNumber{1} 
 {}
 
-string Level0::getFileName const {
-    return "";
-}
-
 bool Level1::isHeavy() const {
     return false;
 }
 
 void Level1::onBlockPlaced(bool clearedRows) {
     // Level 1 does nothing here
-}
-
-void Level1::readFile(string) {
-    // Level 1 ignores sequence files
-}
-
-void Level1::genBlocksFromFile() {
-    // Level 1 ignores sequence files
 }
 
 char Level1::generateNextBlockType() {
