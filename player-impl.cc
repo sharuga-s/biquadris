@@ -245,6 +245,8 @@ void Player::rotateCCW() {
 void Player::dropBlock() {
     if (isGameOver || !currBlock) return;
 
+    clearSpecialAction();
+
     int r = currBlock->getRow();
     int c = currBlock->getCol();
 
@@ -274,6 +276,10 @@ void Player::dropBlock() {
     if (numCleared >= 2) {
         specialActionTriggered = true;
         numSpecialActions = numCleared;
+    }
+
+    if (heavyEffects > 0) {
+        decrementHeavyEffects();
     }
 
     promoteNextBlock();
