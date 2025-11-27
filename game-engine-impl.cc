@@ -69,8 +69,6 @@ void GameEngine::executeSingleCommand(const string& cmd) {
         p.decLevel();
     } else if (cmd == "random") {
         p.setRandomMode(true);
-    } else if (cmd == "norandom") {
-        p.setRandomMode(false);
     } else if (cmd == "restart") {
         // reset whole game state but stay in the program
         for (auto& pl : players) {
@@ -149,23 +147,25 @@ void GameEngine::handleCommand(const string& rawCmd) {
             executeSequenceFile(filename);
         }
         else if (token == "norandom") {
-            // Support "norandom <file>" for levels 3 & 4 (and any Level that
-            // implements readFile + setRandom).
             string filename;
+            Player& p = currentPlayer();
+
+            // Case 1: "norandom <file>" → load sequence + disable randomness
             if (iss >> filename) {
-                Player& p = currentPlayer();
                 Level* logic = p.getLevelLogic();
                 if (logic) {
                     logic->readFile(filename);   // load sequence
-                    logic->setRandom(false);     // disable random
+                    logic->setRandom(false);     // disable RNG
                 }
-                // state changed → notify
-                notifyObservers();
             } else {
-                // just "norandom" → delegate to normal handling
-                executeSingleCommand("norandom");
+                // Case 2: just "norandom" → toggle off randomness only
+                p.setRandomMode(false);
             }
+
+            // state changed → redraw
+            notifyObservers();
         }
+
         else {
             executeSingleCommand(token);
         }

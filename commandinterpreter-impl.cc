@@ -6,6 +6,7 @@ import <fstream>;
 import <sstream>;
 import <string>;
 import <vector>;
+import <cctype>;
 
 using namespace std;
 
@@ -45,7 +46,9 @@ bool CommandInterpreter::isPrefixOf(const string &input, const string &full) con
 }
 
 bool CommandInterpreter::multiplierAllowed(const string &cmdWord) const {
-    if (cmdWord == "restart" || cmdWord == "random" || cmdWord == "norandom" || cmdWord == "sequence") {
+    if (cmdWord == "restart" || cmdWord == "random" || 
+        cmdWord == "norandom" || cmdWord == "sequence" ||
+        cmdWord == "blind"   || cmdWord == "heavy") {
         return false;
     }
     return true;

@@ -81,7 +81,7 @@ export class Player {
         void addScore(int ptsToAdd);
         bool getBlind() const;
         void setBlind(bool b);
-        unique_ptr<Level> Player::getLevelLogic() const;
+        Level* Player::getLevelLogic() const;
 
         // effects
         void applyEffect(SpecialAction* effect); 

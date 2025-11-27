@@ -363,6 +363,7 @@ void Player::decrementHeavyEffects() {
     applyHeavy(nextBlock.get());
 }
 
+// returns whether or not the current level is heavy + whether or not there's heavy effect in play, caused by opposite player
 bool Player::isHeavy() const {
     return levelLogic->isHeavy() || heavyEffects > 0;
 }
