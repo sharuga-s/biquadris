@@ -5,7 +5,6 @@ import TextDisplay;
 import GraphicDisplay;
 import CommandInterpreter;
 
-// guac and cheese holy moly :>
 import <iostream>;
 import <fstream>;
 import <sstream>;

@@ -30,8 +30,9 @@ public:
     // also resolves abbreviations internally
     string applyMultiplier(const string &cmd);
 
-    // reads a sequence file line-by-line (validation only)
-    void executeSequenceFile(const string &filename);
+    // REMOVED, MAKES MORE SENSE IN GAMEENGINE
+    // // reads a sequence file line-by-line (validation only)
+    // void executeSequenceFile(const string &filename);
 
     // resolves "lef" → "left", "ri" → "right", etc.
     string resolveAbbreviations(const string &cmd);
