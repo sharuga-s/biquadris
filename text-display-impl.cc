@@ -3,6 +3,8 @@ module TextDisplay;
 import Grid;
 import Block;
 import Cell;
+import GameEngine;
+import Player;
 
 import <iostream>;
 import <string>;
@@ -12,6 +14,29 @@ import <iomanip>;
 using namespace std;
 
 TextDisplay::TextDisplay() {}
+
+TextDisplay::TextDisplay(GameEngine* g) : game{g} {}
+
+void TextDisplay::notify() {
+    if (!game) return;
+    
+    // Pull data from the Subject (GameEngine)
+    const Player& p1 = game->getPlayer1();
+    const Player& p2 = game->getPlayer2();
+    
+    // Cache the data for rendering
+    renderBoard(p1.getGrid(), p2.getGrid(), 
+                p1.getLevel(), p2.getLevel(),
+                p1.getBlind(), p2.getBlind());
+    
+    renderNext(p1.getNextBlock(), p2.getNextBlock());
+    
+    renderScores(p1.getScore(), p2.getScore(), 
+                 p1.getHiScore(), p2.getHiScore());
+    
+    // Actually render to cout
+    update();
+}
 
 void TextDisplay::renderBoard(const Grid& g1, const Grid& g2, int lvl1, int lvl2, bool blind1, bool blind2) {
     grid1 = &g1;
@@ -53,7 +78,7 @@ void TextDisplay::update() {
     const auto& cells1 = grid1->getCells();
     const auto& cells2 = grid2->getCells();
     
-    // Print the boards side by side (rows 0-14, skip top 3 reserve rows)
+    // Print the boards side by side (rows 3-17, skip top 3 reserve rows)
     for (int r = 3; r < 18; ++r) {
         // Player 1 board
         for (int c = 0; c < 11; ++c) {

@@ -1,5 +1,6 @@
 export module GraphicsDisplay;
 
+import Display;
 import Grid;
 import Block;
 import xwindow;
@@ -8,9 +9,15 @@ import <memory>;
 
 using namespace std;
 
-export class GraphicsDisplay {
+// Forward declaration
+export class GameEngine;
+
+export class GraphicsDisplay : public Display {
 private:
-    // Stored data for rendering
+    // Reference to the subject (game)
+    GameEngine* game = nullptr;
+    
+    // Cached data for rendering
     const Grid* grid1 = nullptr;
     const Grid* grid2 = nullptr;
     Block* nextBlock1 = nullptr;
@@ -27,19 +34,25 @@ private:
     // Xwindow wrapper
     unique_ptr<Xwindow> xw;
     
-    int cellSize = 20;  // Size of each cell in pixels
+    int cellSize = 20;
     bool textOnly = false;
     
+    // Internal rendering methods
     void drawCell(int x, int y, char type);
     int getColorForType(char type);
     void drawBlock(Block* block, int offsetX, int offsetY);
-    
-public:
-    GraphicsDisplay(bool textOnly = false);
-    ~GraphicsDisplay() = default;
-    
     void renderBoard(const Grid& g1, const Grid& g2, int lvl1, int lvl2, bool blind1, bool blind2);
     void renderNext(Block* next1, Block* next2);
     void renderScores(int s1, int s2, int hi1, int hi2);
-    void update();  // Actually render to X11 window
+    void update();
+    
+public:
+    GraphicsDisplay(bool textOnly = false);
+    explicit GraphicsDisplay(GameEngine* g, bool textOnly = false);
+    ~GraphicsDisplay() override = default;
+    
+    // Observer pattern: notify method
+    void notify() override;
+    
+    void setGame(GameEngine* g) { game = g; }
 };
