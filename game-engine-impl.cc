@@ -1,8 +1,7 @@
 module GameEngine;
 
 import Player;
-import TextDisplay;
-import GraphicDisplay;
+import Subject;
 import CommandInterpreter;
 
 import <iostream>;
@@ -13,6 +12,12 @@ import <utility>;
 import <vector>;
 
 using namespace std;
+
+GameEngine::GameEngine(Player p1, Player p2)
+    : currPlayer{0}, ci{}, gameOver{false} {
+        players.push_back(move(p1));
+        players.push_back(move(p2));
+}
 
 Player& GameEngine::currentPlayer() {
     return players[currPlayer];
@@ -26,33 +31,18 @@ void GameEngine::switchTurns() {
     currPlayer = 1 - currPlayer;
 }
 
-// this will need a lot of refactoring once we work on Display...
-void GameEngine::updateDisplays() {
-    // text
-    textDisplay.renderBoard(players[0].getGrid(), players[1].getGrid(), players[0].getLevel(), players[1].getLevel(), players[0].getBlind(), players[1].getBlind());
-    textDisplay.renderNext(players[0].getNextBlock(), players[1].getNextBlock());
-    textDisplay.renderScores(players[0].getScore(), players[1].getScore(), players[0].getHiScore(), players[1].getHiScore());
-    textDisplay.update();
-
-    // graphics
-    graphicsDisplay.renderBoard(players[0].getGrid(), players[1].getGrid(), players[0].getLevel(), players[1].getLevel(), players[0].getBlind(), players[1].getBlind());
-    graphicsDisplay.renderNext(players[0].getNextBlock(), players[1].getNextBlock());
-    graphicsDisplay.renderScores(players[0].getScore(), players[1].getScore(), players[0].getHiScore(), players[1].getHiScore());
-    graphicsDisplay.update();
-}
-
-void GameEngine::executeSingleCommand(const std::string& cmd) {
+void GameEngine::executeSingleCommand(const string& cmd) {
     Player& p = currentPlayer();
 
     // 1. player movement
     if (cmd == "left") {
-        p.moveLeft();
+        p.moveBlockLeft();
     }
     else if (cmd == "right") {
-        p.moveRight();
+        p.moveBlockRight();
     }
     else if (cmd == "down") {
-        p.moveDown();
+        p.moveBlockDown();
     }
     else if (cmd == "clockwise") {
         p.rotateCW();
@@ -68,15 +58,15 @@ void GameEngine::executeSingleCommand(const std::string& cmd) {
         } else {
             switchTurns();
         }
-    } else if (cmd == "hold") { // hold
+    } else if (cmd == "hold") {
         p.holdBlock();
-    } else if (cmd == "levelup") {            // level up
+    } else if (cmd == "levelup") {
         p.incLevel();
-    } else if (cmd == "leveldown") {          // level down
+    } else if (cmd == "leveldown") {
         p.decLevel();
-    } else if (cmd == "random") {             // random generation (for levels that support it)
+    } else if (cmd == "random") {
         p.setRandomMode(true);
-    } else if (cmd == "norandom") {           // fixed sequence / no random
+    } else if (cmd == "norandom") {
         p.setRandomMode(false);
     } else if (cmd == "I" || cmd == "J" || cmd == "L" ||
                cmd == "O" || cmd == "S" || cmd == "Z" || cmd == "T") { 
@@ -84,15 +74,14 @@ void GameEngine::executeSingleCommand(const std::string& cmd) {
         otherPlayer().forceNextBlock(cmd[0]);
     }
 
-    // igore unknown commands
-
-    updateDisplays();
+    // OBSERVER PATTERN: Notify all observers after state change!
+    notifyObservers();
 }
 
-void GameEngine::executeSequenceFile(const std::string& filename) {
+void GameEngine::executeSequenceFile(const string& filename) {
     ifstream in{filename};
     if (!in) {
-        cerr << "Cannot open sequence file: " << filename << '\n'; // fix ts
+        cerr << "Cannot open sequence file: " << filename << '\n';
         return;
     }
 
@@ -102,17 +91,12 @@ void GameEngine::executeSequenceFile(const std::string& filename) {
     }
 }
 
-GameEngine::GameEngine(Player p1, Player p2, TextDisplay td, GraphicDisplay gd)
-    : currPlayer{0}, players{}, ci{}, textDisplay{move(td)}, graphicsDisplay{move(gd)}, gameOver{false} {
-        players.push_back(move(p1));
-        players.push_back(move(p2));
-}
-
 void GameEngine::start() {
     gameOver = false;
     currPlayer = 0;
 
-    updateDisplays();
+    // OBSERVER PATTERN: Initial notification
+    notifyObservers();
 
     string line;
     while (!gameOver && getline(cin, line)) {
@@ -128,10 +112,9 @@ void GameEngine::end() {
     cout << "Final Score P2: " << players[1].getScore() << '\n';
 }
 
-void GameEngine::handleCommand(const std::string& rawCmd) {
+void GameEngine::handleCommand(const string& rawCmd) {
     if (gameOver) return;
 
-    // needs work: once ci implemented, we need to fix ts if needed!
     string expanded = ci.parse(rawCmd);
     if (expanded.empty()) return;
 
@@ -148,5 +131,3 @@ void GameEngine::handleCommand(const std::string& rawCmd) {
         }
     }
 }
-
-
