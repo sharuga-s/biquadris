@@ -215,12 +215,16 @@ void Player::setLevel(Level* newLogic, int newLevelNum) {
     applyHeavy(nextBlock);
 }
 
-void setBlind(bool b){
+bool Player::getBlind() const{
+    return isBlind;
+}
+
+void Player::setBlind(bool b){
     isBlind = b;
 }
 
-bool getBlind() const{
-    return isBlind;
+Level* Player::getLevelLogic() const {
+    return levelLogic;
 }
 
 // effects ----------------------------------------------------------------------

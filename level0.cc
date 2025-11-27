@@ -23,6 +23,6 @@ public:
     void readFile(string file);
     void genBlocksFromFile();
     void setRandom(bool enabled) override;
-    void onBlockPlaced() override
+    void onBlockPlaced(bool clearedRows) override;
     string getFileName() const;
 };

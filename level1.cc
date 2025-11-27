@@ -14,6 +14,6 @@ export class Level1 : public Level {
 
         char generateNextBlockType() override;
         bool isHeavy() const override;
-        void onBlockPlaced() override;
+        void onBlockPlaced(bool clearedRows) override;
         void setRandom(bool enabled) override;
 };
