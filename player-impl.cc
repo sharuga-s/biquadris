@@ -145,7 +145,19 @@ void Player::moveBlockLeft() {
     int totalHeavy = (currBlock->isBlockHeavy() ? 1 : 0) + (levelLogic->isHeavy() ? 1 : 0);
     if (totalHeavy > 0) {
         int rowsMoved = 0;
-        int targetRows = 2 * totalHeavy;
+        
+        int targetRows = 0;
+
+        // If level is heavy (3/4): fall 1 row
+        if (levelLogic->isHeavy()) {
+            targetRows += 1;
+        }
+
+        // If current block is heavy from special action: fall 2 rows
+        if (currBlock->isBlockHeavy()) {
+            targetRows += 2;
+        }
+
         
         for (int i = 0; i < targetRows; ++i) {
             int newRow = currBlock->getRow() + 1;
@@ -183,7 +195,18 @@ void Player::moveBlockRight() {
     int totalHeavy = (currBlock->isBlockHeavy() ? 1 : 0) + (levelLogic->isHeavy() ? 1 : 0);
     if (totalHeavy > 0) {
         int rowsMoved = 0;
-        int targetRows = 2 * totalHeavy;
+        int targetRows = 0;
+
+        // If level is heavy (3/4): fall 1 row
+        if (levelLogic->isHeavy()) {
+            targetRows += 1;
+        }
+
+        // If current block is heavy from special action: fall 2 rows
+        if (currBlock->isBlockHeavy()) {
+            targetRows += 2;
+        }
+
         
         for (int i = 0; i < targetRows; ++i) {
             int newRow = currBlock->getRow() + 1;
@@ -223,7 +246,19 @@ void Player::moveBlockDown() {
     int totalHeavy = (currBlock->isBlockHeavy() ? 1 : 0) + (levelLogic->isHeavy() ? 1 : 0);
     if (totalHeavy > 0) {
         int rowsMoved = 0;
-        int targetRows = 2 * totalHeavy;
+        
+        int targetRows = 0;
+
+        // If level is heavy (3/4): fall 1 row
+        if (levelLogic->isHeavy()) {
+            targetRows += 1;
+        }
+
+        // If current block is heavy from special action: fall 2 rows
+        if (currBlock->isBlockHeavy()) {
+            targetRows += 2;
+        }
+
         
         for (int i = 0; i < targetRows; ++i) {
             int newRow = currBlock->getRow() + 1;
@@ -252,39 +287,73 @@ void Player::rotateCW() {
     auto oldCells = currBlock->getCells();
     int oldRot = currBlock->getRotation();
 
-    // Apply rotation
+    // ----- old bounding box (local coords) -----
+    int oldMinRow = 999, oldMaxRow = -1;
+    int oldMinCol = 999, oldMaxCol = -1;
+    for (auto [r, c] : oldCells) {
+        if (r < oldMinRow) oldMinRow = r;
+        if (r > oldMaxRow) oldMaxRow = r;
+        if (c < oldMinCol) oldMinCol = c;
+        if (c > oldMaxCol) oldMaxCol = c;
+    }
+
+    // ----- perform local rotation -----
     currBlock->rotateCWLocal();
 
-    // Check if rotation is valid
-    if (!grid.isValidPosition(*currBlock, oldRow, oldCol)) {
-        // Revert rotation
+    // ----- new bounding box (local coords) -----
+    int newMinRow = 999, newMaxRow = -1;
+    int newMinCol = 999, newMaxCol = -1;
+    for (auto [r, c] : currBlock->getCells()) {
+        if (r < newMinRow) newMinRow = r;
+        if (r > newMaxRow) newMaxRow = r;
+        if (c < newMinCol) newMinCol = c;
+        if (c > newMaxCol) newMaxCol = c;
+    }
+
+    // old bottom-left corner in *absolute* board coords
+    int oldBottomLeftRow = oldRow + oldMaxRow;
+    int oldBottomLeftCol = oldCol + oldMinCol;
+
+    // choose new (row,col) so that bottom-left stays fixed
+    int newRow = oldBottomLeftRow - newMaxRow;
+    int newCol = oldBottomLeftCol - newMinCol;
+
+    currBlock->setPosition(newRow, newCol);
+
+    // if rotation is illegal, revert
+    if (!grid.isValidPosition(*currBlock, newRow, newCol)) {
         currBlock->setCells(oldCells);
         currBlock->setRotation(oldRot);
         currBlock->setPosition(oldRow, oldCol);
         return;
     }
 
-    // Rotation is valid, apply Heavy effect
-    int totalHeavy = (currBlock->isBlockHeavy() ? 1 : 0) + (levelLogic->isHeavy() ? 1 : 0);
+    // ----- Heavy effect (level 3/4 and/or special heavy) -----
+    int totalHeavy = (currBlock->isBlockHeavy() ? 1 : 0) +
+                     (levelLogic->isHeavy() ? 1 : 0);
+
     if (totalHeavy > 0) {
-        int rowsMoved = 0;
-        int targetRows = 2 * totalHeavy;
-        
+        int targetRows = 0;
+        if (levelLogic->isHeavy())      targetRows += 1; // level heavy
+        if (currBlock->isBlockHeavy())  targetRows += 2; // special heavy
+
         for (int i = 0; i < targetRows; ++i) {
-            int newRow = currBlock->getRow() + 1;
-            if (grid.isValidPosition(*currBlock, newRow, oldCol)) {
-                currBlock->setPosition(newRow, oldCol);
-                rowsMoved++;
+            int hr = currBlock->getRow() + 1;
+            int hc = currBlock->getCol();
+            if (grid.isValidPosition(*currBlock, hr, hc)) {
+                currBlock->setPosition(hr, hc);
             } else {
-                // Hit something - drop immediately
+                // hit something while falling → lock in
                 dropBlock();
                 return;
             }
         }
     }
 
-    // After rotation (with or without heavy), check if block is now grounded
-    if (!grid.isValidPosition(*currBlock, currBlock->getRow() + 1, oldCol)) {
+    // after rotation (and heavy), if it's sitting on something, drop it
+    int belowRow = currBlock->getRow() + 1;
+    int curCol   = currBlock->getCol();
+    if (!grid.isValidPosition(*currBlock, belowRow, curCol)) {
         dropBlock();
     }
 }
@@ -297,42 +366,77 @@ void Player::rotateCCW() {
     auto oldCells = currBlock->getCells();
     int oldRot = currBlock->getRotation();
 
-    // Apply rotation
+    // ----- old bounding box (local coords) -----
+    int oldMinRow = 999, oldMaxRow = -1;
+    int oldMinCol = 999, oldMaxCol = -1;
+    for (auto [r, c] : oldCells) {
+        if (r < oldMinRow) oldMinRow = r;
+        if (r > oldMaxRow) oldMaxRow = r;
+        if (c < oldMinCol) oldMinCol = c;
+        if (c > oldMaxCol) oldMaxCol = c;
+    }
+
+    // ----- perform local rotation -----
     currBlock->rotateCCWLocal();
 
-    // Check if rotation is valid
-    if (!grid.isValidPosition(*currBlock, oldRow, oldCol)) {
-        // Revert rotation
+    // ----- new bounding box (local coords) -----
+    int newMinRow = 999, newMaxRow = -1;
+    int newMinCol = 999, newMaxCol = -1;
+    for (auto [r, c] : currBlock->getCells()) {
+        if (r < newMinRow) newMinRow = r;
+        if (r > newMaxRow) newMaxRow = r;
+        if (c < newMinCol) newMinCol = c;
+        if (c > newMaxCol) newMaxCol = c;
+    }
+
+    // old bottom-left corner in *absolute* board coords
+    int oldBottomLeftRow = oldRow + oldMaxRow;
+    int oldBottomLeftCol = oldCol + oldMinCol;
+
+    // choose new (row,col) so that bottom-left stays fixed
+    int newRow = oldBottomLeftRow - newMaxRow;
+    int newCol = oldBottomLeftCol - newMinCol;
+
+    currBlock->setPosition(newRow, newCol);
+
+    // if rotation is illegal, revert
+    if (!grid.isValidPosition(*currBlock, newRow, newCol)) {
         currBlock->setCells(oldCells);
         currBlock->setRotation(oldRot);
         currBlock->setPosition(oldRow, oldCol);
         return;
     }
 
-    // Rotation is valid, apply Heavy effect
-    int totalHeavy = (currBlock->isBlockHeavy() ? 1 : 0) + (levelLogic->isHeavy() ? 1 : 0);
+    // ----- Heavy effect (level 3/4 and/or special heavy) -----
+    int totalHeavy = (currBlock->isBlockHeavy() ? 1 : 0) +
+                     (levelLogic->isHeavy() ? 1 : 0);
+
     if (totalHeavy > 0) {
-        int rowsMoved = 0;
-        int targetRows = 2 * totalHeavy;
-        
+        int targetRows = 0;
+        if (levelLogic->isHeavy())      targetRows += 1; // level heavy
+        if (currBlock->isBlockHeavy())  targetRows += 2; // special heavy
+
         for (int i = 0; i < targetRows; ++i) {
-            int newRow = currBlock->getRow() + 1;
-            if (grid.isValidPosition(*currBlock, newRow, oldCol)) {
-                currBlock->setPosition(newRow, oldCol);
-                rowsMoved++;
+            int hr = currBlock->getRow() + 1;
+            int hc = currBlock->getCol();
+            if (grid.isValidPosition(*currBlock, hr, hc)) {
+                currBlock->setPosition(hr, hc);
             } else {
-                // Hit something - drop immediately
+                // hit something while falling → lock in
                 dropBlock();
                 return;
             }
         }
     }
 
-    // After rotation (with or without heavy), check if block is now grounded
-    if (!grid.isValidPosition(*currBlock, currBlock->getRow() + 1, oldCol)) {
+    // after rotation (and heavy), if it's sitting on something, drop it
+    int belowRow = currBlock->getRow() + 1;
+    int curCol   = currBlock->getCol();
+    if (!grid.isValidPosition(*currBlock, belowRow, curCol)) {
         dropBlock();
     }
 }
+
 // =========================
 //  DROP + scoring
 // =========================
