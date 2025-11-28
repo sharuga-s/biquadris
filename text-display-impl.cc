@@ -53,6 +53,10 @@ void TextDisplay::notify() {
     update();
 }
 
+void TextDisplay::setGame(GameEngine* g) {
+    game = g;
+}
+
 void TextDisplay::renderBoard(const Grid& g1, const Grid& g2, int lvl1, int lvl2, bool blind1, bool blind2) {
     grid1 = &g1;
     grid2 = &g2;
