@@ -13,6 +13,7 @@ import LevelFactory;
 import <algorithm>;
 import <memory>;
 import <string>;
+import <iostream>;
 
 using namespace std;
 
@@ -34,15 +35,6 @@ unique_ptr<Block> Player::createBlockFromType(char type) {
 }
 
 // =========================
-//  Apply heavy logic
-// =========================
-void Player::applyHeavy(Block* b) {
-    if (!b) return;
-    bool heavy = levelLogic->isHeavy() || heavyEffects > 0;
-    b->setHeavy(heavy);
-}
-
-// =========================
 //  Rebuild Level on levelUp/down - NOW USES FACTORY
 // =========================
 void Player::rebuildLevel() {
@@ -52,10 +44,6 @@ void Player::rebuildLevel() {
 
     // Use factory to create new level, preserving sequence file
     levelLogic = LevelFactory::createLevelPreservingSequence(levelNumber, levelLogic.get());
-
-    // Update heavy state on existing blocks
-    applyHeavy(currBlock.get());
-    applyHeavy(nextBlock.get());
 }
 
 // =========================
@@ -64,17 +52,16 @@ void Player::rebuildLevel() {
 void Player::spawnInitialBlocks() {
     char t1 = levelLogic->generateNextBlockType();
     currBlock = createBlockFromType(t1);
-    applyHeavy(currBlock.get());
+    // Removed applyHeavy call
 
     char t2 = levelLogic->generateNextBlockType();
     nextBlock = createBlockFromType(t2);
-    applyHeavy(nextBlock.get());
+    // Removed applyHeavy call
 
     if (currBlock && !grid.isValid(currBlock.get())) {
         isGameOver = true;
     }
 }
-
 // =========================
 //  Promote nextBlock → currBlock
 // =========================
@@ -83,7 +70,7 @@ void Player::promoteNextBlock() {
 
     char nextType = levelLogic->generateNextBlockType();
     nextBlock = createBlockFromType(nextType);
-    applyHeavy(nextBlock.get());
+    // Removed applyHeavy call
 
     hasHeldThisTurn = false;
 
@@ -105,7 +92,6 @@ void Player::holdBlock() {
 
         char nextType = levelLogic->generateNextBlockType();
         nextBlock = createBlockFromType(nextType);
-        applyHeavy(nextBlock.get());
     } else {
         swap(currBlock, heldBlock);
     }
@@ -148,10 +134,15 @@ void Player::moveBlockLeft() {
     if (grid.isValidPosition(*currBlock, r, c)) {
         currBlock->setPosition(r, c);
 
-        if (currBlock->isBlockHeavy()) {
-            int hr = r + 1;
+        // Combined heavy (special + level)
+        int totalHeavy = (currBlock->isBlockHeavy() ? 1 : 0) + (levelLogic->isHeavy() ? 1 : 0);
+        if (totalHeavy > 0) {
+            int hr = r + (2 * totalHeavy);
             if (grid.isValidPosition(*currBlock, hr, c)) {
                 currBlock->setPosition(hr, c);
+            } else {
+                dropBlock();
+                return;
             }
         }
     }
@@ -166,10 +157,15 @@ void Player::moveBlockRight() {
     if (grid.isValidPosition(*currBlock, r, c)) {
         currBlock->setPosition(r, c);
 
-        if (currBlock->isBlockHeavy()) {
-            int hr = r + 1;
+        // Combined heavy (special + level)
+        int totalHeavy = (currBlock->isBlockHeavy() ? 1 : 0) + (levelLogic->isHeavy() ? 1 : 0);
+        if (totalHeavy > 0) {
+            int hr = r + (2 * totalHeavy);
             if (grid.isValidPosition(*currBlock, hr, c)) {
                 currBlock->setPosition(hr, c);
+            } else {
+                dropBlock();
+                return;
             }
         }
     }
@@ -189,27 +185,62 @@ void Player::moveBlockDown() {
 // =========================
 //  ROTATION
 // =========================
+
 void Player::rotateCW() {
     if (isGameOver || !currBlock) return;
 
-    int r = currBlock->getRow();
-    int c = currBlock->getCol();
-
+    int oldRow = currBlock->getRow();
+    int oldCol = currBlock->getCol();
     auto oldCells = currBlock->getCells();
     int oldRot = currBlock->getRotation();
 
+    // Find old bounding box
+    int oldMinRow = 999, oldMaxRow = -1;
+    int oldMinCol = 999, oldMaxCol = -1;
+    for (auto [r, c] : oldCells) {
+        if (r < oldMinRow) oldMinRow = r;
+        if (r > oldMaxRow) oldMaxRow = r;
+        if (c < oldMinCol) oldMinCol = c;
+        if (c > oldMaxCol) oldMaxCol = c;
+    }
+
+    // Perform rotation
     currBlock->rotateCWLocal();
 
-    if (!grid.isValidPosition(*currBlock, r, c)) {
+    // Find new bounding box
+    int newMinRow = 999, newMaxRow = -1;
+    int newMinCol = 999, newMaxCol = -1;
+    for (auto [r, c] : currBlock->getCells()) {
+        if (r < newMinRow) newMinRow = r;
+        if (r > newMaxRow) newMaxRow = r;
+        if (c < newMinCol) newMinCol = c;
+        if (c > newMaxCol) newMaxCol = c;
+    }
+
+    // Calculate where the old bottom-left corner was in absolute coordinates
+    int oldBottomLeftRow = oldRow + oldMaxRow;
+    int oldBottomLeftCol = oldCol + oldMinCol;
+
+    // Calculate new position to preserve bottom-left corner
+    int newRow = oldBottomLeftRow - newMaxRow;
+    int newCol = oldBottomLeftCol - newMinCol;
+
+    currBlock->setPosition(newRow, newCol);
+
+    // Check if rotation is valid
+    if (!grid.isValidPosition(*currBlock, newRow, newCol)) {
+        // Revert rotation
         currBlock->setCells(oldCells);
         currBlock->setRotation(oldRot);
+        currBlock->setPosition(oldRow, oldCol);
         return;
     }
 
+    // Apply heavy effect if needed
     if (currBlock->isBlockHeavy()) {
-        int hr = r + 1;
-        if (grid.isValidPosition(*currBlock, hr, c)) {
-            currBlock->setPosition(hr, c);
+        int hr = newRow + 1;
+        if (grid.isValidPosition(*currBlock, hr, newCol)) {
+            currBlock->setPosition(hr, newCol);
         }
     }
 }
@@ -217,24 +248,58 @@ void Player::rotateCW() {
 void Player::rotateCCW() {
     if (isGameOver || !currBlock) return;
 
-    int r = currBlock->getRow();
-    int c = currBlock->getCol();
-
+    int oldRow = currBlock->getRow();
+    int oldCol = currBlock->getCol();
     auto oldCells = currBlock->getCells();
     int oldRot = currBlock->getRotation();
 
+    // Find old bounding box
+    int oldMinRow = 999, oldMaxRow = -1;
+    int oldMinCol = 999, oldMaxCol = -1;
+    for (auto [r, c] : oldCells) {
+        if (r < oldMinRow) oldMinRow = r;
+        if (r > oldMaxRow) oldMaxRow = r;
+        if (c < oldMinCol) oldMinCol = c;
+        if (c > oldMaxCol) oldMaxCol = c;
+    }
+
+    // Perform rotation
     currBlock->rotateCCWLocal();
 
-    if (!grid.isValidPosition(*currBlock, r, c)) {
+    // Find new bounding box
+    int newMinRow = 999, newMaxRow = -1;
+    int newMinCol = 999, newMaxCol = -1;
+    for (auto [r, c] : currBlock->getCells()) {
+        if (r < newMinRow) newMinRow = r;
+        if (r > newMaxRow) newMaxRow = r;
+        if (c < newMinCol) newMinCol = c;
+        if (c > newMaxCol) newMaxCol = c;
+    }
+
+    // Calculate where the old bottom-left corner was in absolute coordinates
+    int oldBottomLeftRow = oldRow + oldMaxRow;
+    int oldBottomLeftCol = oldCol + oldMinCol;
+
+    // Calculate new position to preserve bottom-left corner
+    int newRow = oldBottomLeftRow - newMaxRow;
+    int newCol = oldBottomLeftCol - newMinCol;
+
+    currBlock->setPosition(newRow, newCol);
+
+    // Check if rotation is valid
+    if (!grid.isValidPosition(*currBlock, newRow, newCol)) {
+        // Revert rotation
         currBlock->setCells(oldCells);
         currBlock->setRotation(oldRot);
+        currBlock->setPosition(oldRow, oldCol);
         return;
     }
 
+    // Apply heavy effect if needed
     if (currBlock->isBlockHeavy()) {
-        int hr = r + 1;
-        if (grid.isValidPosition(*currBlock, hr, c)) {
-            currBlock->setPosition(hr, c);
+        int hr = newRow + 1;
+        if (grid.isValidPosition(*currBlock, hr, newCol)) {
+            currBlock->setPosition(hr, newCol);
         }
     }
 }
@@ -257,6 +322,8 @@ void Player::dropBlock() {
 
     grid.placeBlock(currBlock.get());
 
+    if (currBlock) currBlock->setHeavy(false);
+
     int numCleared = 0;
     grid.clearFullRows(numCleared);
 
@@ -276,10 +343,6 @@ void Player::dropBlock() {
     if (numCleared >= 2) {
         specialActionTriggered = true;
         numSpecialActions = numCleared;
-    }
-
-    if (heavyEffects > 0) {
-        decrementHeavyEffects();
     }
 
     promoteNextBlock();
@@ -315,26 +378,13 @@ bool Player::getGameOver() const { return isGameOver; }
 // =========================
 //  Special effects
 // =========================
-void Player::applyEffect(void* effect) {
+void Player::applyEffect(SpecialAction* effect) {
     if (!effect || isGameOver) return;
-    SpecialAction* specialAction = static_cast<SpecialAction*>(effect);
-    specialAction->apply(*this, grid);
-}
-
-void Player::incrementHeavyEffects() {
-    heavyEffects++;
-    applyHeavy(currBlock.get());
-    applyHeavy(nextBlock.get());
-}
-
-void Player::decrementHeavyEffects() {
-    if (heavyEffects > 0) heavyEffects--;
-    applyHeavy(currBlock.get());
-    applyHeavy(nextBlock.get());
+    effect->apply(*this, grid);
 }
 
 bool Player::isHeavy() const {
-    return levelLogic->isHeavy() || heavyEffects > 0;
+    return levelLogic->isHeavy();
 }
 
 bool Player::hasSpecialAction() const {
@@ -380,7 +430,7 @@ void Player::decLevel() {
 // =========================
 void Player::forceNextBlock(char type) {
     nextBlock = createBlockFromType(type);
-    applyHeavy(nextBlock.get());
+    // Removed applyHeavy call
 }
 
 // =========================
@@ -398,7 +448,6 @@ void Player::reset() {
 
     score = 0;
     isBlind = false;
-    heavyEffects = 0;
     isGameOver = false;
     hasHeldThisTurn = false;
     specialActionTriggered = false;

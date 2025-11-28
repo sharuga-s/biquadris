@@ -3,6 +3,11 @@ module Heavy;
 import Player;
 import Grid;
 
+using namespace std;
+
 void Heavy::apply(Player& p, Grid&) {
-    p.incrementHeavyEffects();
+    if (p.getCurrentBlock()) {
+        auto* block = p.getCurrentBlock();
+        block->setHeavy(true);
+    }
 }

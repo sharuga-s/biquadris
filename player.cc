@@ -32,6 +32,8 @@ relationships:
 - HAS-A [composition] Level 
 */
 
+export class SpecialAction;
+
 export class Player {
     private:
         // fields 
@@ -47,14 +49,12 @@ export class Player {
         bool hasHeldThisTurn = false; // esnsure at most one hold per turn
         bool isBlind = false;
         bool isGameOver = false;
-        int heavyEffects = 0;
         bool specialActionTriggered = false;  
         int numSpecialActions = 0;
 
         // helper functions
         void spawnInitialBlocks();
         void promoteNextBlock();
-        void applyHeavy(Block* b);
         unique_ptr<Block> createBlockFromType(char type);
         void rebuildLevel();
     public:
@@ -92,12 +92,10 @@ export class Player {
         void setBlind(bool b);
         Level* getLevelLogic() const;
         bool getGameOver() const;
+        bool isHeavy() const;
 
         // effects
-        void applyEffect(void* effect); 
-        void incrementHeavyEffects();  
-        void decrementHeavyEffects();  
-        bool isHeavy() const; 
+        void applyEffect(SpecialAction* effect); 
 
         // game logic
         void incLevel(); // move level up
@@ -114,7 +112,7 @@ export class Player {
 };
 
 export class SpecialAction {
-public:
-    virtual ~SpecialAction() = default;
-    virtual void apply(Player& p, Grid& g) = 0;
+    public:
+        virtual ~SpecialAction() = default;
+        virtual void apply(Player& p, Grid& g) = 0;
 };
