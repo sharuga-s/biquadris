@@ -448,29 +448,55 @@ void Player::dropBlock() {
     int r = currBlock->getRow();
     int c = currBlock->getCol();
 
+    // Drop the block to its lowest valid row
     while (grid.isValidPosition(*currBlock, r + 1, c)) {
         r += 1;
         currBlock->setPosition(r, c);
     }
 
     grid.placeBlock(currBlock.get());
-
     if (currBlock) currBlock->setHeavy(false);
 
     int numCleared = 0;
     grid.clearFullRows(numCleared);
 
-    // Blind should clear at the END of this player's drop
-    if (isBlind) {
-        isBlind = false;
-    }
+    // Blind clears at the end of drop
+    if (isBlind) isBlind = false;
 
+    // Add points for cleared rows
     if (numCleared > 0) {
         int pts = (levelNumber + numCleared) * (levelNumber + numCleared);
         addScore(pts);
     }
 
+    // Notify level (handles streak tracking)
     levelLogic->onBlockPlaced(numCleared > 0);
+
+    // ===== LEVEL 4 STAR LOGIC =====
+        if (levelLogic->shouldDropStar()) {
+        // center column of the board
+        int midCol = grid.getCols() / 2;  // no hard-coded 6
+
+        auto star = createBlockFromType('*');
+        star->setPosition(0, midCol);  // spawn at top middle
+
+        int sr = 0;
+        while (grid.isValidPosition(*star, sr + 1, midCol)) {
+            sr++;
+            star->setPosition(sr, midCol);
+        }
+
+        grid.placeBlock(star.get());
+
+        int extraCleared = 0;
+        grid.clearFullRows(extraCleared);
+        if (extraCleared > 0) {
+            int pts = (levelNumber + extraCleared) * (levelNumber + extraCleared);
+            addScore(pts);
+        }
+    }
+
+    // ===============================
 
     if (numCleared >= 2) {
         specialActionTriggered = true;
@@ -478,7 +504,6 @@ void Player::dropBlock() {
     }
 
     justDropped = true;
-
     promoteNextBlock();
 }
 

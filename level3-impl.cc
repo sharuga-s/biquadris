@@ -23,6 +23,10 @@ bool Level3::isHeavy() const {
     return true;
 }
 
+bool Level3::shouldDropStar() const {
+    return false;
+}
+
 void Level3::onBlockPlaced(bool clearedRows) {
     // nothing happens
 }

@@ -19,6 +19,10 @@ bool Level1::isHeavy() const {
     return false;
 }
 
+bool Level1::shouldDropStar() const {
+    return false;
+}
+
 char Level1::generateNextBlockType() {
     // Weighted distribution:
     // 0: S     (1)

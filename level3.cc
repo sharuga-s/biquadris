@@ -27,4 +27,5 @@ export class Level3 : public Level {
         void readFile(string file) override;
         void setSequenceFile(const std::string& file) override;
         string getSequenceFile() const override;
+        bool shouldDropStar() const override;
 };

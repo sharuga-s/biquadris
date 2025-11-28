@@ -17,6 +17,10 @@ bool Level2::isHeavy() const {
     return false;
 }
 
+bool Level2::shouldDropStar() const {
+    return false;
+}
+
 char Level2::generateNextBlockType() {
     
     // choose random number 0–6

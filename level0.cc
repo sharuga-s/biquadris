@@ -28,4 +28,5 @@ public:
 
     void setSequenceFile(const std::string& file) override;
     string getSequenceFile() const override;
+    virtual bool shouldDropStar() const override;
 };

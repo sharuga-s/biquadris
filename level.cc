@@ -28,4 +28,6 @@ export class Level {
         virtual void setSequenceFile(const string&) {}   // level1/2 ignore
         virtual string getSequenceFile() const { return ""; }
 
+        virtual bool shouldDropStar() const = 0;
+
 };

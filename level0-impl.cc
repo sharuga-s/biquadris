@@ -29,6 +29,10 @@ bool Level0::isHeavy() const {
     return false;
 }
 
+bool Level0::shouldDropStar() const {
+    return false;
+}
+
 void Level0::readFile(string file) {
     filename = file;
     genBlocksFromFile();

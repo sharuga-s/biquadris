@@ -17,5 +17,6 @@ export class Level1 : public Level {
         void onBlockPlaced(bool clearedRows) override;
         void setRandom(bool enabled) override;
         void readFile(string file) override;
+        bool shouldDropStar() const override;
         
 };

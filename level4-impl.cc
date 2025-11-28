@@ -23,31 +23,24 @@ void Level4::onBlockPlaced(bool clearedRows) {
         noClearStreak = 0;
     } else {
         noClearStreak++;
-
-        // Every 5 consecutive no-clear blocks → drop a star next
-        if (noClearStreak % 5 == 0) {
-            pendingStars++;
-        }
     }
+}
+
+bool Level4::shouldDropStar() const {
+    return (noClearStreak > 0 && noClearStreak % 5 == 0);
 }
 
 // purpose: generate the next block type
 char Level4::generateNextBlockType() {
 
-    // 1. stars take priority
-    if (pendingStars > 0) {
-        pendingStars--;
-        return '*';
-    }
-
-    // 2. if sequence mode is enabled
+    // 1. if sequence mode is enabled
     if (!randomMode && !sequence.empty()) {
         char type = sequence[sequenceIndex];
         sequenceIndex = (sequenceIndex + 1) % sequence.size();
         return type;
     }
 
-    // 3. level 3 weighted random distribution
+    // 2. level 3 weighted random distribution
     int r = rand() % 9;
 
     if (r == 0 || r == 1) {
