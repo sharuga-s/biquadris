@@ -7,10 +7,10 @@ import GameEngine;
 
 export class TextDisplay : public Display {
 private:
-    // Reference to the subject (game)
+    // reference to the subject (game)
     GameEngine* game = nullptr;
     
-    // Cached data for rendering
+    // cached data for rendering -- same reasn for caching as graphics
     const Grid* grid1 = nullptr;
     const Grid* grid2 = nullptr;
     Block* nextBlock1 = nullptr;
@@ -28,18 +28,18 @@ private:
     bool isBlind1 = false;
     bool isBlind2 = false;
     
-    // Internal rendering methods
+    // priv rendering methods
     void renderBoard(const Grid& g1, const Grid& g2, int lvl1, int lvl2, bool blind1, bool blind2);
     void renderNext(Block* next1, Block* next2);
     void renderScores(int s1, int s2, int hi1, int hi2);
-    void update();  // Actually print to cout
+    void update();  // atually print to cout
     
 public:
     TextDisplay();
     explicit TextDisplay(GameEngine* g);
     ~TextDisplay() override = default;
     
-    // Observer pattern: notify method
+    // observer pattern: notify method
     void notify() override;
     
     void setGame(GameEngine* g) { game = g; }

@@ -7,66 +7,72 @@ import <algorithm>;
 using namespace std;
 
 // helper fns -----------------------------------------------------------------
-void Block::applyCWRotation() {
-    int max_row = 0, max_col = 0;
+void Block::applyCWRotation() { // purpose: apply clockwise rotation on the block
+
+    int maxRow = 0, maxCol = 0;
+
+    // range-based for loop that iterates through all cells
+    for (auto [r, c] : cells) {
+        maxRow = max(maxRow, r);
+        maxCol = max(maxCol, c);
+    }
+
+    // pair to store new cells
+    vector<pair<int,int>> newCells; 
 
     for (auto [r, c] : cells) {
-        max_row = max(max_row, r);
-        max_col = max(max_col, c);
+        int newR = c;
+        int newC = width - 1 - r;
+        newCells.push_back({newR, newC});
     }
-    int height = max_row + 1;
-    int width  = max_col + 1;
 
-    vector<pair<int,int>> new_cells;
-    for (auto [r, c] : cells) {
-        int new_r = c;
-        int new_c = width - 1 - r;
-        new_cells.push_back({new_r, new_c});
-    }
-    cells = new_cells;
+    // reassign
+    cells = newCells;
 }
 
-void Block::applyCCWRotation() {
-    int max_row = 0, max_col = 0;
+void Block::applyCCWRotation() { // purpose: apply c-clockwise rotation on the block
+    int maxRow = 0, maxCol = 0;
 
+    // range-based for loop that iterates through all cells
     for (auto [r, c] : cells) {
-        max_row = max(max_row, r);
-        max_col = max(max_col, c);
+        maxRow = max(maxRow, r);
+        maxCol = max(maxCol, c);
     }
-    int height = max_row + 1;
-    int width  = max_col + 1;
+    
+    // pair to store new cells
+    vector<pair<int,int>> newCells;
+    for (auto [r, c] : cells) {
+        int newR = height - 1 - c;
+        int newC = r;
+        newCells.push_back({newR, newC});
+    }
 
-    vector<pair<int,int>> new_cells;
-    for (auto [r, c] : cells) {
-        int new_r = height - 1 - c;
-        int new_c = r;
-        new_cells.push_back({new_r, new_c});
-    }
-    cells = new_cells;
+    // reassign
+    cells = newCells;
 }
 
-void Block::computeSpawnPosition() {
-    int max_row = 0;
+void Block::computeSpawnPosition() { // purpose: find spawn position of the block
+    int maxRow = 0;
 
     for (auto [r, c] : cells) {
-        max_row = max(max_row, r);
+        maxRow = max(maxRow, r);
     }
 
-    int height = max_row + 1;
+    int height = maxRow + 1;
 
-    // bottom row of block must be at board row 3
+    // bottom row of block must be at board row 3 (reserve row condition)
     row = 3 - (height - 1);
     // block appears at the leftmost column
     col = 0;
 }
 
 // rotation controllers (geometry only) ---------------------------------------
-void Block::rotateCWLocal() {
+void Block::rotateCWLocal() { // purpose: rotation states
     applyCWRotation();
     rotation = (rotation + 1) % 4;
 }
 
-void Block::rotateCCWLocal() {
+void Block::rotateCCWLocal() {  // purpose: rotation states
     applyCCWRotation();
     rotation = (rotation + 3) % 4;
 }
@@ -81,12 +87,12 @@ void Block::setCells(const vector<pair<int,int>>& newCells) {
 }
 
 vector<pair<int,int>> Block::getAbsoluteCells() const {
-    vector<pair<int,int>> abs_pos;
+    vector<pair<int,int>> absPos;
 
     for (auto [dr, dc] : cells) {
-        abs_pos.push_back({row + dr, col + dc});
+        absPos.push_back({row + dr, col + dc});
     }
-    return abs_pos;
+    return absPos;
 }
 
 bool Block::isBlockHeavy() const {

@@ -19,14 +19,14 @@ TextDisplay::TextDisplay(GameEngine* g) : game{g} {}
 void TextDisplay::notify() {
     if (!game) return;
     
-    // Pull data from the Subject (GameEngine)
+    // pull data from the Subject (GameEngine)
     const Player& p1 = game->getPlayer1();
     const Player& p2 = game->getPlayer2();
 
     currBlock1 = p1.getCurrentBlock();
     currBlock2 = p2.getCurrentBlock();
     
-    // Cache the data for rendering
+    // cache the data for rendering
     renderBoard(p1.getGrid(), p2.getGrid(), 
                 p1.getLevel(), p2.getLevel(),
                 p1.getBlind(), p2.getBlind());
@@ -36,7 +36,7 @@ void TextDisplay::notify() {
     renderScores(p1.getScore(), p2.getScore(), 
                  p1.getHiScore(), p2.getHiScore());
     
-    // Actually render to cout
+    // actually render to cout
     update();
 }
 
@@ -64,12 +64,12 @@ void TextDisplay::renderScores(int s1, int s2, int hi1, int hi2) {
 void TextDisplay::update() {
     if (!grid1 || !grid2) return;
     
-    const int width = grid1->getCols();   // should be 11
+    const int width = grid1->getCols(); // should be 11
     const int boardPrintWidth = width * 2; // char + space per column
-    const string sep = "       ";        // spacing between the two boards
+    const string sep = "       ";  // spacing between the two boards
     const int previewWidth = 4; // 4 columns for previews (next/current)
 
-    // Print scores and levels
+    // print scores and levels
     cout << "Level:    " << level1;
     cout << "         Level:    " << level2 << endl;
     
@@ -79,7 +79,7 @@ void TextDisplay::update() {
     cout << "Hi Score: " << hiScore1;
     cout << "         Hi Score: " << hiScore2 << endl;
 
-    // Column numbers with spaces between columns
+    // column numbers with spaces between columns
     for (int c = 0; c < width; ++c) {
         cout << (c % 10);
         if (c != width - 1) cout << ' ';
@@ -91,7 +91,7 @@ void TextDisplay::update() {
     }
     cout << endl;
 
-    // Top border, matching the spaced columns
+    // top border, matching the spaced columns
     for (int c = 0; c < width; ++c) {
         cout << '-';
         if (c != width - 1) cout << ' ';
@@ -103,12 +103,13 @@ void TextDisplay::update() {
     }
     cout << endl;
     
-    // Get the grid cells
+    // get the grid cells
     const auto& cells1 = grid1->getCells();
     const auto& cells2 = grid2->getCells();
     
-    // Get current block positions for overlay
+    // get current block positions for overlay
     vector<pair<int,int>> currBlockPos1, currBlockPos2;
+
     if (currBlock1) {
         currBlockPos1 = currBlock1->getAbsoluteCells();
     }
@@ -116,11 +117,10 @@ void TextDisplay::update() {
         currBlockPos2 = currBlock2->getAbsoluteCells();
     }
     
-    // Print the boards side by side (rows 0-17, including reserve rows at top)
+    // print the boards side by side (rows 0-17 + reserve rows at top)
     for (int r = 0; r < 18; ++r) {
-        // Add visual separator after reserve rows (row 2)
         if (r == 3) {
-            // Draw separator line between reserve and playable area
+            // just visual indicator of resevre vs play area
             for (int c = 0; c < width; ++c) {
                 cout << '=';
                 if (c != width - 1) cout << ' ';
@@ -133,11 +133,11 @@ void TextDisplay::update() {
             cout << endl;
         }
         
-        // Player 1 board
+        // player 1 board
         for (int c = 0; c < width; ++c) {
             char ch;
             
-            // Check if current block occupies this position
+            // check if current block occupies this position
             bool isCurrBlock = false;
             if (currBlock1) {
                 for (auto [br, bc] : currBlockPos1) {
@@ -149,7 +149,7 @@ void TextDisplay::update() {
                 }
             }
             
-            // If not current block, show grid cell (with blind effect if applicable)
+            // if not current block, show grid cell (with blind effect if applicable)
             if (!isCurrBlock) {
                 if (isBlind1 && r >= 3 && r <= 12 && c >= 3 && c <= 9) {
                     ch = '?';
@@ -162,13 +162,13 @@ void TextDisplay::update() {
             if (c != width - 1) cout << ' ';
         }
         
-        cout << sep;  // Space between boards
+        cout << sep;  // space between boards
         
-        // Player 2 board
+        // player 2 board
         for (int c = 0; c < width; ++c) {
             char ch;
             
-            // Check if current block occupies this position
+            // check if current block occupies this position
             bool isCurrBlock = false;
             if (currBlock2) {
                 for (auto [br, bc] : currBlockPos2) {
@@ -180,7 +180,7 @@ void TextDisplay::update() {
                 }
             }
             
-            // If not current block, show grid cell (with blind effect if applicable)
+            // if not current block, show grid cell (with blind effect if applicable)
             if (!isCurrBlock) {
                 if (isBlind2 && r >= 3 && r <= 12 && c >= 3 && c <= 9) {
                     ch = '?';
@@ -196,7 +196,7 @@ void TextDisplay::update() {
         cout << endl;
     }
     
-    // Bottom border
+    // bottom border
     for (int c = 0; c < width; ++c) {
         cout << '-';
         if (c != width - 1) cout << ' ';
@@ -208,14 +208,14 @@ void TextDisplay::update() {
     }
     cout << endl;
     
-    // ===== NEXT BLOCKS =====
-    int nextHeaderPad = (previewWidth + static_cast<int>(sep.size())) - 5; // 5 = len("Next:")
+    // next blocks
+    int nextHeaderPad = (previewWidth + static_cast<int>(sep.size())) - 5; 
     if (nextHeaderPad < 1) nextHeaderPad = 1;
 
     cout << "Next:" << string(nextHeaderPad, ' ') << "Next:" << endl;
 
     if (nextBlock1 || nextBlock2) {
-        // Find bounding box for each block
+        // find bounding box for each block
         int minRow1 = 999, maxRow1 = -1, minCol1 = 999, maxCol1 = -1;
         int minRow2 = 999, maxRow2 = -1, minCol2 = 999, maxCol2 = -1;
 
@@ -236,7 +236,7 @@ void TextDisplay::update() {
             }
         }
 
-        // Normalize to start from (0,0)
+        // 'normalize' to start from (0,0)
         int height1 = (maxRow1 >= 0) ? (maxRow1 - minRow1 + 1) : 0;
         int height2 = (maxRow2 >= 0) ? (maxRow2 - minRow2 + 1) : 0;
         int rowsToPrint = (height1 > height2) ? height1 : height2;

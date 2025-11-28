@@ -11,13 +11,15 @@ import <string>;
 
 using namespace std;
 
+// purpose: instantiates the correct Level subclass based on the int level number
 unique_ptr<Level> LevelFactory::createLevel(int levelNum, const string& sequenceFile) {
-    // Clamp level to valid range
+    // restrict level to valid range
     if (levelNum < 0) levelNum = 0;
     if (levelNum > 4) levelNum = 4;
     
     switch (levelNum) {
         case 0: {
+            // use default sequence file unless caller provided one
             string file = sequenceFile.empty() ? "sequence1.txt" : sequenceFile;
             return make_unique<Level0>(file);
         }
@@ -29,6 +31,7 @@ unique_ptr<Level> LevelFactory::createLevel(int levelNum, const string& sequence
             return make_unique<Level2>();
         
         case 3: {
+            // heavy behaviour + random distribution
             auto lvl = make_unique<Level3>();
             if (!sequenceFile.empty()) {
                 lvl->setSequenceFile(sequenceFile);
@@ -44,11 +47,14 @@ unique_ptr<Level> LevelFactory::createLevel(int levelNum, const string& sequence
             return lvl;
         }
         
+        // just in case but should never even reach dis case
         default:
             return make_unique<Level0>("sequence1.txt");
     }
 }
 
+// purpose: NEW level object but preserves the sequence file from an existing level
+//  why: when user changes level mid-game but still wanst same script
 unique_ptr<Level> LevelFactory::createLevelPreservingSequence(int levelNum, Level* currentLevel) {
     string sequenceFile = "";
     

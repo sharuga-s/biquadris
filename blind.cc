@@ -5,5 +5,5 @@ import Grid;
 
 export class Blind : public SpecialAction {
     public:
-       void apply(Player& p, Grid& g) override;
+       void apply(Player& p, Grid& g) override; // overrides the method from the SpecialAction class
 };

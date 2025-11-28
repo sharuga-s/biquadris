@@ -23,17 +23,14 @@ public:
 
     // expands shortcuts:
     // - trims whitespace
-    // - built-in aliases: cw → clockwise, ccw → counterclockwise, seq → sequence
+    // - built-in aliases: cw -> clockwise, ccw -> counterclockwise, seq -> sequence
     string expandShortcuts(const string &cmd);
 
-    // applies a leading multiplier (3left → "left left left")
+    // applies a leading multiplier (3left -> "left left left")
     // also resolves abbreviations internally
     string applyMultiplier(const string &cmd);
 
-    // REMOVED, MAKES MORE SENSE IN GAMEENGINE
-    // // reads a sequence file line-by-line (validation only)
-    // void executeSequenceFile(const string &filename);
 
-    // resolves "lef" → "left", "ri" → "right", etc.
+    // resolves "lef" -> "left", "ri" -> "right", etc.
     string resolveAbbreviations(const string &cmd);
 };

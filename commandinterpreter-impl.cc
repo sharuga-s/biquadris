@@ -9,6 +9,7 @@ import <cctype>;
 using namespace std;
 
 CommandInterpreter::CommandInterpreter() {
+    // dict of the valid commands -> abbreviations must map to one of these
     validCommands = {
         "left",
         "right",
@@ -29,6 +30,7 @@ CommandInterpreter::CommandInterpreter() {
     };
 }
 
+// purpose: true if `input` is a prefix of `full`
 bool CommandInterpreter::isPrefixOf(const string &input, const string &full) const {
     if (input.size() > full.size()) {
         return false;
@@ -43,6 +45,7 @@ bool CommandInterpreter::isPrefixOf(const string &input, const string &full) con
     return true;
 }
 
+// purpose: some commands SHOULD NOT support multipliers
 bool CommandInterpreter::multiplierAllowed(const string &cmdWord) const {
     if (cmdWord == "restart" || cmdWord == "random" || 
         cmdWord == "norandom" || cmdWord == "sequence" ||
@@ -52,6 +55,7 @@ bool CommandInterpreter::multiplierAllowed(const string &cmdWord) const {
     return true;
 }
 
+// special shorthand commands
 string CommandInterpreter::expandShortcuts(const string &cmd) {
     //trim whitespace
     string cleaned = "";
@@ -66,7 +70,7 @@ string CommandInterpreter::expandShortcuts(const string &cmd) {
         end = end - 1;
     }
 
-    // if entire string was whitespace → return empty
+    // if entire string was whitespace, we return empty
     if (start > end) {
         return "";
     }
@@ -89,13 +93,16 @@ string CommandInterpreter::expandShortcuts(const string &cmd) {
     return cleaned;
 }
 
+// purpose: exact match, return it otherwise return original
 string CommandInterpreter::resolveAbbreviations(const string &cmd) {
+    // 1. exact command match
     for (const string &full : validCommands) {
         if (cmd == full) {
             return cmd;
         }
     }
 
+    // 2. // prefix match search
     string match = "";
     int count = 0;
 
@@ -106,13 +113,15 @@ string CommandInterpreter::resolveAbbreviations(const string &cmd) {
         }
     }
 
-    if (count == 1) { //we need it to be unique
+    if (count == 1) { // we need it to be unique
         return match;
     }
 
+    // else, return ambig command
     return cmd;
 }
 
+// purpose: numeric multiplier for commands that can take it
 string CommandInterpreter::applyMultiplier(const string &cmd) {
 
     int i = 0;
@@ -120,21 +129,24 @@ string CommandInterpreter::applyMultiplier(const string &cmd) {
         i = i + 1;
     }
 
+    // case 1: no digits -> resolve normall
     if (i == 0) {
         string resolved = resolveAbbreviations(cmd);
         return resolved;
     }
 
+    // make leading digits into a multiplier
     int mult = 0;
     for (int j = 0; j < i; j++) {
         mult = mult * 10 + (cmd[j] - '0');
     }
 
-    // idk if this is the best behaviour, revisit ****************
+    // ignore mults of 0
     if (mult == 0) {
         return "";
     }
 
+    // separate command word and args
     string rest = "";
     for (int j = i; j < cmd.length(); j++) {
         rest = rest + cmd[j];
@@ -167,8 +179,10 @@ string CommandInterpreter::applyMultiplier(const string &cmd) {
         }
     }
 
+    // resolve abbreviations BEFORE checking multiplier validity
     string resolved = resolveAbbreviations(word);
 
+    // check mult validity
     if (!multiplierAllowed(resolved)) {
         return resolved + args;
     }
@@ -185,6 +199,10 @@ string CommandInterpreter::applyMultiplier(const string &cmd) {
     return result;
 }
 
+// purpose: 
+    // 1. expand special shortcuts
+    // 2. apply numeric multipliers
+    // 3. resolve abbreviations
 string CommandInterpreter::parse(const string &cmd) {
     string expanded = expandShortcuts(cmd);
     string finalCmd = applyMultiplier(expanded);

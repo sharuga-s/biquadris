@@ -11,14 +11,14 @@ import <ctime>;
 using namespace std;
 
 int main(int argc, char* argv[]) {
-    // Default values
+    // default values
     bool textOnly = false;
     int startLevel = 0;
     string scriptFile1 = "sequence1.txt";
     string scriptFile2 = "sequence2.txt";
     int seed = time(nullptr);
     
-    // Parse command-line arguments
+    // parse command-line arguments
     for (int i = 1; i < argc; ++i) {
         string arg = argv[i];
         
@@ -41,25 +41,25 @@ int main(int argc, char* argv[]) {
         }
     }
     
-    // Seed random number generator
+    // seed random number generator
     srand(seed);
     
-    // Create players - NOW MUCH SIMPLER!
+    // create players 
     Player p1{startLevel, scriptFile1};
     Player p2{startLevel, scriptFile2};
     
-    // Create game (Subject)
+    // create game (Subject)
     GameEngine game(startLevel, scriptFile1, startLevel, scriptFile2);
     
-    // Create displays (Observers)
+    // create displays (Observers)
     TextDisplay textDisplay(&game);
     GraphicsDisplay graphicsDisplay(&game, textOnly);
     
-    // OBSERVER PATTERN: Attach observers to subject
+    // OBSERVER PATTERN: attach observers to subject
     game.attach(&textDisplay);
     game.attach(&graphicsDisplay);
     
-    // Start game
+    // start game :>
     game.start();
     
     return 0;

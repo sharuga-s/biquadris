@@ -26,7 +26,7 @@ public:
     }
     
 protected:
-    // Called by derived class when state changes
+    // called by derived class when state changes
     void notifyObservers() {
         for (auto obs : observers) {
             obs->notify();

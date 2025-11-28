@@ -9,16 +9,37 @@ import xwindow;
 import <memory>;
 import <vector>;
 import <string>;
-import <algorithm>;  // for min/max
+import <algorithm>;  
 
 using namespace std;
 
-// ------------------------
-//   Constructor
-// ------------------------
+// constants to avoid magic numbers
 
-GraphicsDisplay::GraphicsDisplay(bool textOnly)
-    : game{nullptr}, xw{nullptr}, textOnly{textOnly}
+// the gui Y positions
+const int PLAYER_LABEL_Y = 30;
+const int SCORE_TITLE_Y = 25;
+const int SCORE_STATS_Y = 45;
+
+// spacing/layout for gui
+const int NEXT_AREA_OFFSET_Y = 30; // gap before "Next:"
+const int NEXT_CLEAR_PADDING = 20; // clear area padding
+const int GAP_AND_OFFSET = 10; // spacing between next + held
+
+// blind area boundaries 
+const int BLIND_ROW_START = 3;
+const int BLIND_ROW_END = 12;
+const int BLIND_COL_START = 3;
+const int BLIND_COL_END = 9;
+
+// cleaner rendering
+const int MAX_BOUND_INIT = 999;  
+const int PREVIEW_SIZE = 4;
+
+// ---------------------------------
+
+
+// ctor
+GraphicsDisplay::GraphicsDisplay(bool textOnly) : game{nullptr}, xw{nullptr}, textOnly{textOnly}
 {
     prevBoard1.assign(rows, vector<char>(cols, '\0'));
     prevBoard2.assign(rows, vector<char>(cols, '\0'));
@@ -29,22 +50,18 @@ GraphicsDisplay::GraphicsDisplay(bool textOnly)
     }
 }
 
-GraphicsDisplay::GraphicsDisplay(GameEngine* g, bool textOnly)
-    : GraphicsDisplay{textOnly}
+GraphicsDisplay::GraphicsDisplay(GameEngine* g, bool textOnly) : GraphicsDisplay{textOnly}
 {
     game = g;
 }
 
-// ------------------------
-//   Initialization
-// ------------------------
-
+// purpose: initializing graphics
 void GraphicsDisplay::initGraphics() {
     if (!xw) return;
     clearBackground();
 
-    xw->drawString(board1Left, 30, "Player 1");
-    xw->drawString(board2Left, 30, "Player 2");
+    xw->drawString(board1Left, PLAYER_LABEL_Y, "Player 1");
+    xw->drawString(board2Left, PLAYER_LABEL_Y, "Player 2");
 }
 
 void GraphicsDisplay::clearBackground() {
@@ -52,10 +69,7 @@ void GraphicsDisplay::clearBackground() {
     xw->fillRectangle(0, 0, windowWidth, windowHeight, Xwindow::White);
 }
 
-// ------------------------
-//   Cell Rendering
-// ------------------------
-
+// purpose: render cells with correct colours
 void GraphicsDisplay::drawCell(int boardIndex, int row, int col, char type, bool cellBlind) {
     if (!xw) return;
     if (row < visibleTopRow || row >= rows) return;
@@ -67,7 +81,7 @@ void GraphicsDisplay::drawCell(int boardIndex, int row, int col, char type, bool
     int colour;
 
     if (cellBlind) {
-        colour = Xwindow::Brown;
+        colour = Xwindow::Black;
     } else {
         switch (type) {
             case 'I': colour = Xwindow::Cyan;    break;
@@ -83,40 +97,45 @@ void GraphicsDisplay::drawCell(int boardIndex, int row, int col, char type, bool
         }
     }
 
-    // Draw border
+    // draw border
     xw->fillRectangle(x, y, cellSize, cellSize, Xwindow::Black);
-    // Draw inner cell
+    // draw inner cell
     xw->fillRectangle(x + 1, y + 1, cellSize - 2, cellSize - 2, colour);
 }
 
-// ------------------------
-//   Board Rendering
-// ------------------------
+// purpose: get color for block type
+int GraphicsDisplay::getColorForBlockType(char type) {
+    switch (type) {
+        case 'I': return Xwindow::Cyan;
+        case 'J': return Xwindow::Blue;
+        case 'L': return Xwindow::Orange;
+        case 'O': return Xwindow::Yellow;
+        case 'S': return Xwindow::Green;
+        case 'Z': return Xwindow::Red;
+        case 'T': return Xwindow::Magenta;
+        case '*': return Xwindow::Brown;
+        default: return Xwindow::White;
+    }
+}
 
-void GraphicsDisplay::renderBoards(
-    const Grid& g1,
-    const Grid& g2,
-    Block* curr1,
-    Block* curr2,
-    bool blind1,
-    bool blind2
-) {
+// purpose: render boards for players
+void GraphicsDisplay::renderBoards(const Grid& g1, const Grid& g2, Block* curr1, Block* curr2, bool blind1, bool blind2) {
     const auto& c1 = g1.getCells();
     const auto& c2 = g2.getCells();
 
-    // Get current block positions for overlay
+    // get curr block positions for overlay
     vector<pair<int,int>> currPos1, currPos2;
     if (curr1) currPos1 = curr1->getAbsoluteCells();
     if (curr2) currPos2 = curr2->getAbsoluteCells();
 
-    // OPTIMIZATION: Only redraw cells that changed (dirty rectangle tracking)
+    // OPTIMIZATION: only redraw cells that changed bc too slow before
     for (int r = visibleTopRow; r < rows; ++r) {
         for (int c = 0; c < cols; ++c) {
 
-            bool blindCell1 = blind1 && r >= 3 && r <= 12 && c >= 3 && c <= 9;
-            bool blindCell2 = blind2 && r >= 3 && r <= 12 && c >= 3 && c <= 9;
+            bool blindCell1 = blind1 && r >= BLIND_ROW_START && r <= BLIND_ROW_END && c >= BLIND_COL_START && c <= BLIND_COL_END;
+            bool blindCell2 = blind2 && r >= BLIND_ROW_START && r <= BLIND_ROW_END && c >= BLIND_COL_START && c <= BLIND_COL_END;
 
-            // Check if current block occupies this position
+            // check if curr block occupies this position
             char display1 = c1[r][c].getVal();
             char display2 = c2[r][c].getVal();
             
@@ -141,7 +160,7 @@ void GraphicsDisplay::renderBoards(
             char effective1 = blindCell1 ? '?' : display1;
             char effective2 = blindCell2 ? '?' : display2;
 
-            // Only draw if changed
+            // only draw if changed
             if (prevBoard1[r][c] != effective1) {
                 drawCell(0, r, c, display1, blindCell1);
                 prevBoard1[r][c] = effective1;
@@ -157,177 +176,176 @@ void GraphicsDisplay::renderBoards(
     prevBlind2 = blind2;
 }
 
-// ------------------------
-//   Next Block Rendering
-// ------------------------
+// purpose: helper to draw a single next block preview
+void GraphicsDisplay::drawNextBlockPreview(Block* blk, int boardIndex, int nextY) {
+    if (!blk) return;
 
+    const auto& cells = blk->getCells();
+    if (cells.empty()) return;
+
+    int minR = MAX_BOUND_INIT, minC = MAX_BOUND_INIT;
+
+    // find bounding box
+    for (auto [r, c] : cells) {
+        minR = min(minR, r);
+        minC = min(minC, c);
+    }
+
+    int baseX = (boardIndex == 0 ? board1Left : board2Left);
+    int originX = baseX + cellSize;
+    int originY = nextY + GAP_AND_OFFSET;
+
+    char val = blk->getVal();
+    int colour = getColorForBlockType(val);
+
+    // Draw block cells
+    for (auto [r, c] : cells) {
+        int rr = r - minR;
+        int cc = c - minC;
+
+        int x = originX + cc * cellSize;
+        int y = originY + rr * cellSize;
+
+        xw->fillRectangle(x, y, cellSize, cellSize, Xwindow::Black);
+        xw->fillRectangle(x + 1, y + 1, cellSize - 2, cellSize - 2, colour);
+    }
+}
+
+// purpose: render next block for player
 void GraphicsDisplay::renderNext(Block* b1, Block* b2) {
     if (!xw) return;
 
-    // OPTIMIZATION: Only redraw if next blocks changed
+    // OPTIMIZATION: only redraw if next blocks changed
     bool block1Changed = (b1 != prevNextBlock1);
     bool block2Changed = (b2 != prevNextBlock2);
 
     if (!block1Changed && !block2Changed) {
-        return;  // Nothing changed, skip redraw
+        return;  // nothing changed => skip redraw
     }
 
-    int nextY = boardTop + visibleRows * cellSize + 30;
-    int areaHeight = cellSize * 4 + 30;
+    int nextY = boardTop + visibleRows * cellSize + PLAYER_LABEL_Y;
+    int areaHeight = cellSize * PREVIEW_SIZE + PLAYER_LABEL_Y;
 
-    // Lambda to draw next block preview
-    auto drawNext = [&](Block* blk, int boardIndex, bool changed) {
-        if (!changed) return;  // Skip if this specific block didn't change
-
-        int baseX = (boardIndex == 0 ? board1Left : board2Left);
+    // draw Player 1's next block if changed
+    if (block1Changed) {
+        int baseX = board1Left;
         
-        // Clear only this board's next block area
-        xw->fillRectangle(baseX, nextY - 20, cols * cellSize, areaHeight, Xwindow::White);
+        // clear this board's next block area
+        xw->fillRectangle(baseX, nextY - NEXT_CLEAR_PADDING, cols * cellSize, areaHeight, Xwindow::White);
         
-        // Draw "Next:" label
+        // draw "Next:" label
         xw->drawString(baseX, nextY, "Next:");
 
-        if (!blk) return;
+        // draw the block preview
+        drawNextBlockPreview(b1, 0, nextY);
+    }
 
-        const auto& cells = blk->getCells();
-        if (cells.empty()) return;
+    // draw Player 2's next block if changed
+    if (block2Changed) {
+        int baseX = board2Left;
+        
+        // clear this board's next block area
+        xw->fillRectangle(baseX, nextY - NEXT_CLEAR_PADDING, cols * cellSize, areaHeight, Xwindow::White);
+        
+        // draw "Next:" label
+        xw->drawString(baseX, nextY, "Next:");
 
-        int minR = 999, minC = 999;
+        // draw the block preview
+        drawNextBlockPreview(b2, 1, nextY);
+    }
 
-        // Find bounding box
-        for (auto [r, c] : cells) {
-            minR = min(minR, r);
-            minC = min(minC, c);
-        }
-
-        int originX = baseX + cellSize;
-        int originY = nextY + 10;
-
-        char val = blk->getVal();
-
-        int colour = Xwindow::White;
-        switch (val) {
-            case 'I': colour = Xwindow::Cyan;    break;
-            case 'J': colour = Xwindow::Blue;    break;
-            case 'L': colour = Xwindow::Orange;  break;
-            case 'O': colour = Xwindow::Yellow;  break;
-            case 'S': colour = Xwindow::Green;   break;
-            case 'Z': colour = Xwindow::Red;     break;
-            case 'T': colour = Xwindow::Magenta; break;
-            case '*': colour = Xwindow::Brown;   break;
-        }
-
-        // Draw block cells
-        for (auto [r, c] : cells) {
-            int rr = r - minR;
-            int cc = c - minC;
-
-            int x = originX + cc * cellSize;
-            int y = originY + rr * cellSize;
-
-            xw->fillRectangle(x, y, cellSize, cellSize, Xwindow::Black);
-            xw->fillRectangle(x + 1, y + 1, cellSize - 2, cellSize - 2, colour);
-        }
-    };
-
-    // Only redraw changed blocks
-    drawNext(b1, 0, block1Changed);
-    drawNext(b2, 1, block2Changed);
-
-    // Update cache
+    // update cache
     prevNextBlock1 = b1;
     prevNextBlock2 = b2;
 }
 
-// ------------------------
-//   Held Block Rendering
-// ------------------------
+// purpose: helper to draw a single held block preview
+void GraphicsDisplay::drawHeldBlockPreview(Block* blk, int boardIndex, int heldY) {
+    if (!blk) return;
 
+    const auto& cells = blk->getCells();
+    if (cells.empty()) return;
+
+    int minR = MAX_BOUND_INIT, minC = MAX_BOUND_INIT;
+
+    // find bounding box
+    for (auto [r, c] : cells) {
+        minR = min(minR, r);
+        minC = min(minC, c);
+    }
+
+    int baseX = (boardIndex == 0 ? board1Left : board2Left);
+    int originX = baseX + cellSize;
+    int originY = heldY + GAP_AND_OFFSET;
+
+    char val = blk->getVal();
+    int colour = getColorForBlockType(val);
+
+    // fraw block cells
+    for (auto [r, c] : cells) {
+        int rr = r - minR;
+        int cc = c - minC;
+
+        int x = originX + cc * cellSize;
+        int y = originY + rr * cellSize;
+
+        xw->fillRectangle(x, y, cellSize, cellSize, Xwindow::Black);
+        xw->fillRectangle(x + 1, y + 1, cellSize - 2, cellSize - 2, colour);
+    }
+}
+
+// purpose: render held block for player
 void GraphicsDisplay::renderHeld(Block* h1, Block* h2) {
     if (!xw) return;
 
-    // OPTIMIZATION: Only redraw if held blocks changed
+    // OPTIMIZATION: only redraw if held blocks changed
     bool block1Changed = (h1 != prevHeldBlock1);
     bool block2Changed = (h2 != prevHeldBlock2);
 
     if (!block1Changed && !block2Changed) {
-        return;  // Nothing changed, skip redraw
+        return;  // nothing changed, skip redraw
     }
 
-    // Position held block display below next block
-    int nextY = boardTop + visibleRows * cellSize + 30;
-    int nextAreaHeight = cellSize * 4 + 30;
-    int heldY = nextY + nextAreaHeight + 10;  // Below next block
-    int areaHeight = cellSize * 4 + 30;
+    // position held block display below next block
+    int nextY = boardTop + visibleRows * cellSize + PLAYER_LABEL_Y;
+    int nextAreaHeight = cellSize * PREVIEW_SIZE + PLAYER_LABEL_Y;
+    int heldY = nextY + nextAreaHeight + GAP_AND_OFFSET;
+    int areaHeight = cellSize * PREVIEW_SIZE + PLAYER_LABEL_Y;
 
-    // Lambda to draw held block preview
-    auto drawHeld = [&](Block* blk, int boardIndex, bool changed) {
-        if (!changed) return;  // Skip if this specific block didn't change
-
-        int baseX = (boardIndex == 0 ? board1Left : board2Left);
+    // draw Player 1's held block if changed
+    if (block1Changed) {
+        int baseX = board1Left;
         
-        // Clear only this board's held block area
-        xw->fillRectangle(baseX, heldY - 20, cols * cellSize, areaHeight, Xwindow::White);
+        // clear this board's held block area
+        xw->fillRectangle(baseX, heldY - NEXT_CLEAR_PADDING, cols * cellSize, areaHeight, Xwindow::White);
         
-        // Draw "Hold:" label
+        // draw "Hold:" label
         xw->drawString(baseX, heldY, "Hold:");
 
-        if (!blk) return;  // No held block
+        // draw the block preview (if there is one)
+        drawHeldBlockPreview(h1, 0, heldY);
+    }
 
-        const auto& cells = blk->getCells();
-        if (cells.empty()) return;
+    // draw Player 2's held block if changed
+    if (block2Changed) {
+        int baseX = board2Left;
+        
+        // clear this board's held block area
+        xw->fillRectangle(baseX, heldY - NEXT_CLEAR_PADDING, cols * cellSize, areaHeight, Xwindow::White);
+        
+        // draw "Hold:" label
+        xw->drawString(baseX, heldY, "Hold:");
 
-        int minR = 999, minC = 999;
+        // draw the block preview (if there is one)
+        drawHeldBlockPreview(h2, 1, heldY);
+    }
 
-        // Find bounding box
-        for (auto [r, c] : cells) {
-            minR = min(minR, r);
-            minC = min(minC, c);
-        }
-
-        int originX = baseX + cellSize;
-        int originY = heldY + 10;
-
-        char val = blk->getVal();
-
-        int colour = Xwindow::White;
-        switch (val) {
-            case 'I': colour = Xwindow::Cyan;    break;
-            case 'J': colour = Xwindow::Blue;    break;
-            case 'L': colour = Xwindow::Orange;  break;
-            case 'O': colour = Xwindow::Yellow;  break;
-            case 'S': colour = Xwindow::Green;   break;
-            case 'Z': colour = Xwindow::Red;     break;
-            case 'T': colour = Xwindow::Magenta; break;
-            case '*': colour = Xwindow::Brown;   break;
-        }
-
-        // Draw block cells
-        for (auto [r, c] : cells) {
-            int rr = r - minR;
-            int cc = c - minC;
-
-            int x = originX + cc * cellSize;
-            int y = originY + rr * cellSize;
-
-            xw->fillRectangle(x, y, cellSize, cellSize, Xwindow::Black);
-            xw->fillRectangle(x + 1, y + 1, cellSize - 2, cellSize - 2, colour);
-        }
-    };
-
-    // Only redraw changed blocks
-    drawHeld(h1, 0, block1Changed);
-    drawHeld(h2, 1, block2Changed);
-
-    // Update cache
+    // update cache
     prevHeldBlock1 = h1;
     prevHeldBlock2 = h2;
 }
 
-// ------------------------
-//   Score Rendering
-// ------------------------
-
+// purpose: render scorse
 void GraphicsDisplay::renderScores(
     int s1, int s2,
     int hi1, int hi2,
@@ -335,29 +353,25 @@ void GraphicsDisplay::renderScores(
 ) {
     if (!xw) return;
 
-    // OPTIMIZATION: Skip if nothing changed
+    // OPTIMIZATION: skip if nothing changed
     if (s1 == prevScore1 && s2 == prevScore2 &&
         hi1 == prevHi1 && hi2 == prevHi2 &&
         lvl1 == prevLevel1 && lvl2 == prevLevel2) return;
 
-    int scoreBand = boardTop - 20;
+    int scoreBand = boardTop - NEXT_CLEAR_PADDING;
     xw->fillRectangle(0, 0, windowWidth, scoreBand, Xwindow::White);
 
     string p1a = "Player 1";
-    string p1b = "Level: " + to_string(lvl1) +
-                 "  Score: " + to_string(s1) +
-                 "  Hi: " + to_string(hi1);
+    string p1b = "Level: " + to_string(lvl1) + "  Score: " + to_string(s1) + "  Hi: " + to_string(hi1);
 
     string p2a = "Player 2";
-    string p2b = "Level: " + to_string(lvl2) +
-                 "  Score: " + to_string(s2) +
-                 "  Hi: " + to_string(hi2);
+    string p2b = "Level: " + to_string(lvl2) + "  Score: " + to_string(s2) + "  Hi: " + to_string(hi2);
 
-    xw->drawString(board1Left, 25, p1a);
-    xw->drawString(board1Left, 45, p1b);
+    xw->drawString(board1Left, SCORE_TITLE_Y, p1a);
+    xw->drawString(board1Left, SCORE_STATS_Y, p1b);
 
-    xw->drawString(board2Left, 25, p2a);
-    xw->drawString(board2Left, 45, p2b);
+    xw->drawString(board2Left, SCORE_TITLE_Y, p2a);
+    xw->drawString(board2Left, SCORE_STATS_Y, p2b);
 
     prevScore1 = s1;
     prevScore2 = s2;
@@ -367,24 +381,16 @@ void GraphicsDisplay::renderScores(
     prevLevel2 = lvl2;
 }
 
-// ------------------------
-//   Observer Notify
-// ------------------------
-
+// purpose: obs patt notify method
 void GraphicsDisplay::notify() {
     if (textOnly || !xw || !game) return;
 
     const Player &p1 = game->getPlayer1();
     const Player &p2 = game->getPlayer2();
 
-    renderBoards(p1.getGrid(), p2.getGrid(), 
-                 p1.getCurrentBlock(), p2.getCurrentBlock(),
-                 p1.getBlind(), p2.getBlind());
+    renderBoards(p1.getGrid(), p2.getGrid(), p1.getCurrentBlock(), p2.getCurrentBlock(), p1.getBlind(), p2.getBlind());
     renderNext(p1.getNextBlock(), p2.getNextBlock());
     renderHeld(p1.getHeldBlock(), p2.getHeldBlock());
-    renderScores(
-        p1.getScore(), p2.getScore(),
-        p1.getHiScore(), p2.getHiScore(),
-        p1.getLevel(), p2.getLevel()
+    renderScores( p1.getScore(), p2.getScore(), p1.getHiScore(), p2.getHiScore(), p1.getLevel(), p2.getLevel()
     );
 }

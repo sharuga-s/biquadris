@@ -12,7 +12,7 @@ export class Grid {
     vector<vector<Cell>> theGrid;
 
 public:
-    Grid(int r = 18, int c = 11);
+    Grid(int r = 18, int c = 11); // initialize with default values of grid size
 
     bool isValid(Block* b) const;
     void reset();
@@ -25,6 +25,7 @@ public:
     void placeBlock(Block* b);
     void clearFullRows(int& numCleared);
 
+    // getters 
     int getRows() const;
     int getCols() const;
     bool isOccupied(int r, int c) const;

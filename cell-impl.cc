@@ -1,5 +1,7 @@
 module Cell;
 
+// getters and setters
+
 int Cell::getRow() const {
     return row;
 }
