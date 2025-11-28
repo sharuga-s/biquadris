@@ -102,6 +102,9 @@ void GameEngine::executeSingleCommand(const string& cmd) {
             otherPlayer().forceNextBlock(cmd[0]);
             p.useOneSpecialAction();
         }
+    } else if (cmd == "quit") {
+        gameOver = true;
+        return;   
     }
 
     if (gameOver) {

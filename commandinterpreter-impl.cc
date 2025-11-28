@@ -26,7 +26,8 @@ CommandInterpreter::CommandInterpreter() {
         "hold",
         "blind",
         "heavy",
-        "I", "J", "L", "O", "S", "Z", "T"
+        "I", "J", "L", "O", "S", "Z", "T",
+        "quit"
     };
 }
 
@@ -50,7 +51,7 @@ bool CommandInterpreter::isPrefixOf(const string &input, const string &full) con
 bool CommandInterpreter::multiplierAllowed(const string &cmdWord) const {
     if (cmdWord == "restart" || cmdWord == "random" || 
         cmdWord == "norandom" || cmdWord == "sequence" ||
-        cmdWord == "blind"   || cmdWord == "heavy") {
+        cmdWord == "blind"   || cmdWord == "heavy" || cmdWord == "quit") {
         return false;
     }
     return true;
