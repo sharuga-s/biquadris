@@ -67,6 +67,7 @@ void TextDisplay::update() {
     const int width = grid1->getCols();   // should be 11
     const int boardPrintWidth = width * 2; // char + space per column
     const string sep = "       ";        // spacing between the two boards
+    const int previewWidth = 4; // 4 columns for previews (next/current)
 
     // Print scores and levels
     cout << "Level:    " << level1;
@@ -106,16 +107,57 @@ void TextDisplay::update() {
     const auto& cells1 = grid1->getCells();
     const auto& cells2 = grid2->getCells();
     
-    // Print the boards side by side (rows 3-17, skip top 3 reserve rows)
-    for (int r = 3; r < 18; ++r) {
+    // Get current block positions for overlay
+    vector<pair<int,int>> currBlockPos1, currBlockPos2;
+    if (currBlock1) {
+        currBlockPos1 = currBlock1->getAbsoluteCells();
+    }
+    if (currBlock2) {
+        currBlockPos2 = currBlock2->getAbsoluteCells();
+    }
+    
+    // Print the boards side by side (rows 0-17, including reserve rows at top)
+    for (int r = 0; r < 18; ++r) {
+        // Add visual separator after reserve rows (row 2)
+        if (r == 3) {
+            // Draw separator line between reserve and playable area
+            for (int c = 0; c < width; ++c) {
+                cout << '=';
+                if (c != width - 1) cout << ' ';
+            }
+            cout << sep;
+            for (int c = 0; c < width; ++c) {
+                cout << '=';
+                if (c != width - 1) cout << ' ';
+            }
+            cout << endl;
+        }
+        
         // Player 1 board
         for (int c = 0; c < width; ++c) {
             char ch;
-            if (isBlind1 && r >= 3 && r <= 12 && c >= 3 && c <= 9) {
-                ch = '?';
-            } else {
-                ch = cells1[r][c].getVal();
+            
+            // Check if current block occupies this position
+            bool isCurrBlock = false;
+            if (currBlock1) {
+                for (auto [br, bc] : currBlockPos1) {
+                    if (br == r && bc == c) {
+                        ch = currBlock1->getVal();
+                        isCurrBlock = true;
+                        break;
+                    }
+                }
             }
+            
+            // If not current block, show grid cell (with blind effect if applicable)
+            if (!isCurrBlock) {
+                if (isBlind1 && r >= 3 && r <= 12 && c >= 3 && c <= 9) {
+                    ch = '?';
+                } else {
+                    ch = cells1[r][c].getVal();
+                }
+            }
+            
             cout << ch;
             if (c != width - 1) cout << ' ';
         }
@@ -125,11 +167,28 @@ void TextDisplay::update() {
         // Player 2 board
         for (int c = 0; c < width; ++c) {
             char ch;
-            if (isBlind2 && r >= 3 && r <= 12 && c >= 3 && c <= 9) {
-                ch = '?';
-            } else {
-                ch = cells2[r][c].getVal();
+            
+            // Check if current block occupies this position
+            bool isCurrBlock = false;
+            if (currBlock2) {
+                for (auto [br, bc] : currBlockPos2) {
+                    if (br == r && bc == c) {
+                        ch = currBlock2->getVal();
+                        isCurrBlock = true;
+                        break;
+                    }
+                }
             }
+            
+            // If not current block, show grid cell (with blind effect if applicable)
+            if (!isCurrBlock) {
+                if (isBlind2 && r >= 3 && r <= 12 && c >= 3 && c <= 9) {
+                    ch = '?';
+                } else {
+                    ch = cells2[r][c].getVal();
+                }
+            }
+            
             cout << ch;
             if (c != width - 1) cout << ' ';
         }
@@ -150,39 +209,45 @@ void TextDisplay::update() {
     cout << endl;
     
     // ===== NEXT BLOCKS =====
-    const int previewWidth = 4; // 4 columns for previews (next/current)
-
-    // Align each player's preview under their own "Next:" header
-    // P2 "Next:" starts where its preview starts: previewWidth + sep.size()
     int nextHeaderPad = (previewWidth + static_cast<int>(sep.size())) - 5; // 5 = len("Next:")
     if (nextHeaderPad < 1) nextHeaderPad = 1;
 
     cout << "Next:" << string(nextHeaderPad, ' ') << "Next:" << endl;
 
     if (nextBlock1 || nextBlock2) {
-        int maxRow1 = 0, maxRow2 = 0;
+        // Find bounding box for each block
+        int minRow1 = 999, maxRow1 = -1, minCol1 = 999, maxCol1 = -1;
+        int minRow2 = 999, maxRow2 = -1, minCol2 = 999, maxCol2 = -1;
 
         if (nextBlock1) {
             for (auto [r, c] : nextBlock1->getCells()) {
+                if (r < minRow1) minRow1 = r;
                 if (r > maxRow1) maxRow1 = r;
+                if (c < minCol1) minCol1 = c;
+                if (c > maxCol1) maxCol1 = c;
             }
         }
         if (nextBlock2) {
             for (auto [r, c] : nextBlock2->getCells()) {
+                if (r < minRow2) minRow2 = r;
                 if (r > maxRow2) maxRow2 = r;
+                if (c < minCol2) minCol2 = c;
+                if (c > maxCol2) maxCol2 = c;
             }
         }
 
-        int rowsToPrint = maxRow1;
-        if (maxRow2 > rowsToPrint) rowsToPrint = maxRow2;
+        // Normalize to start from (0,0)
+        int height1 = (maxRow1 >= 0) ? (maxRow1 - minRow1 + 1) : 0;
+        int height2 = (maxRow2 >= 0) ? (maxRow2 - minRow2 + 1) : 0;
+        int rowsToPrint = (height1 > height2) ? height1 : height2;
 
-        for (int r = 0; r <= rowsToPrint; ++r) {
+        for (int r = 0; r < rowsToPrint; ++r) {
             // P1 next block in a 4-wide area
             for (int c = 0; c < previewWidth; ++c) {
                 char ch = ' ';
                 if (nextBlock1) {
                     for (auto [br, bc] : nextBlock1->getCells()) {
-                        if (br == r && bc == c) {
+                        if ((br - minRow1) == r && (bc - minCol1) == c) {
                             ch = nextBlock1->getVal();
                             break;
                         }
@@ -198,70 +263,8 @@ void TextDisplay::update() {
                 char ch = ' ';
                 if (nextBlock2) {
                     for (auto [br, bc] : nextBlock2->getCells()) {
-                        if (br == r && bc == c) {
+                        if ((br - minRow2) == r && (bc - minCol2) == c) {
                             ch = nextBlock2->getVal();
-                            break;
-                        }
-                    }
-                }
-                cout << ch;
-            }
-
-            cout << endl;
-        }
-    }
-
-    cout << endl;
-
-    // ===== CURRENT BLOCKS =====
-    // Align each player's current block under their own "Current:" header
-    // Same idea as for "Next:"
-    int currentHeaderPad = (previewWidth + static_cast<int>(sep.size())) - 8; // 8 = len("Current:")
-    if (currentHeaderPad < 1) currentHeaderPad = 1;
-
-    cout << "Current:" << string(currentHeaderPad, ' ') << "Current:" << endl;
-
-    if (currBlock1 || currBlock2) {
-        int maxRow1 = 0, maxRow2 = 0;
-
-        if (currBlock1) {
-            for (auto [r, c] : currBlock1->getCells()) {
-                if (r > maxRow1) maxRow1 = r;
-            }
-        }
-        if (currBlock2) {
-            for (auto [r, c] : currBlock2->getCells()) {
-                if (r > maxRow2) maxRow2 = r;
-            }
-        }
-
-        int rowsToPrint = maxRow1;
-        if (maxRow2 > rowsToPrint) rowsToPrint = maxRow2;
-
-        for (int r = 0; r <= rowsToPrint; ++r) {
-            // P1 current block in a 4-wide area
-            for (int c = 0; c < previewWidth; ++c) {
-                char ch = ' ';
-                if (currBlock1) {
-                    for (auto [br, bc] : currBlock1->getCells()) {
-                        if (br == r && bc == c) {
-                            ch = currBlock1->getVal();
-                            break;
-                        }
-                    }
-                }
-                cout << ch;
-            }
-
-            cout << sep;
-
-            // P2 current block
-            for (int c = 0; c < previewWidth; ++c) {
-                char ch = ' ';
-                if (currBlock2) {
-                    for (auto [br, bc] : currBlock2->getCells()) {
-                        if (br == r && bc == c) {
-                            ch = currBlock2->getVal();
                             break;
                         }
                     }
