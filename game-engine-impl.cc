@@ -18,9 +18,8 @@ using namespace std;
 
 GameEngine::GameEngine(int level1, const string& seq1, int level2, const string& seq2)
     : currPlayer{0}, ci{}, gameOver{false} {
-        // Construct players directly in the vector using emplace_back
-        players.emplace_back(level1, seq1);
-        players.emplace_back(level2, seq2);
+    players.emplace_back(level1, seq1);
+    players.emplace_back(level2, seq2);
 }
 
 Player& GameEngine::currentPlayer() {
@@ -35,10 +34,12 @@ void GameEngine::switchTurns() {
     currPlayer = 1 - currPlayer;
 }
 
+
 void GameEngine::executeSingleCommand(const string& cmd) {
     Player& p = currentPlayer();
+    bool droppedByCommand = false;   // ✅ did THIS command drop a block?
 
-    // 1. player movement
+    // 1. player movement / actions
     if (cmd == "left") {
         p.moveBlockLeft();
     }
@@ -56,30 +57,32 @@ void GameEngine::executeSingleCommand(const string& cmd) {
     }
     else if (cmd == "drop") {
         p.dropBlock();
+        droppedByCommand = true;    // ✅ mark that we dropped
 
         if (p.getGameOver()) {
             gameOver = true;
-        } else {
-            switchTurns();
         }
-    } else if (cmd == "hold") {
+    }
+    else if (cmd == "hold") {
         p.holdBlock();
-    } else if (cmd == "levelup") {
+    }
+    else if (cmd == "levelup") {
         p.incLevel();
-    } else if (cmd == "leveldown") {
+    }
+    else if (cmd == "leveldown") {
         p.decLevel();
-    } else if (cmd == "random") {
+    }
+    else if (cmd == "random") {
         p.setRandomMode(true);
-    } else if (cmd == "restart") {
-        // reset whole game state but stay in the program
+    }
+    else if (cmd == "restart") {
         for (auto& pl : players) {
-            pl.reset();          // clear grid, score, blocks, etc.
+            pl.reset();
         }
         gameOver = false;
-        currPlayer = 0;           // player 1 starts again
+        currPlayer = 0;
     }
     else if (cmd == "blind") {
-        // Only allowed if current player has special actions
         if (p.hasSpecialAction() && p.getNumSpecialActions() > 0) {
             Blind effect;
             otherPlayer().applyEffect(&effect);
@@ -87,28 +90,144 @@ void GameEngine::executeSingleCommand(const string& cmd) {
         }
     }
     else if (cmd == "heavy") {
-        // Only allowed if current player has special actions
         if (p.hasSpecialAction() && p.getNumSpecialActions() > 0) {
             Heavy effect;
             otherPlayer().applyEffect(&effect);
             p.useOneSpecialAction();
-
-            notifyObservers();
         }
     }
-
     else if (cmd == "I" || cmd == "J" || cmd == "L" ||
              cmd == "O" || cmd == "S" || cmd == "Z" || cmd == "T") {
-        // SPECIAL ACTION: FORCE NEXT BLOCK on the *other* player
         if (p.hasSpecialAction() && p.getNumSpecialActions() > 0) {
             otherPlayer().forceNextBlock(cmd[0]);
             p.useOneSpecialAction();
         }
     }
 
+    // If game ended from this command, do NOT switch turns
+    if (gameOver) {
+        notifyObservers();
+        return;
+    }
+
+    // ✅ For blocks auto-dropped by Heavy during left/right/down
+    bool heavyAutoDrop = p.hasJustDropped();
+    if (heavyAutoDrop) {
+        p.clearJustDropped();
+    }
+
+    // ✅ Exactly ONE turn switch if *either*:
+    //   - user typed "drop"
+    //   - or Heavy caused an auto-drop inside move
+    if (droppedByCommand || heavyAutoDrop) {
+        switchTurns();
+    }
+
+    if (!gameOver) {
+        Player &p = currentPlayer();
+        if (p.hasJustDropped()) {
+            p.clearJustDropped();
+            switchTurns();
+        }
+    }
+
+
     // OBSERVER PATTERN: Notify all observers after state change!
     notifyObservers();
 }
+
+
+// void GameEngine::executeSingleCommand(const string& cmd) {
+//     Player& p = currentPlayer();
+//     bool droppedByCommand = false;   // ✅ did THIS command drop a block?
+
+//     // 1. player movement / actions
+//     if (cmd == "left") {
+//         p.moveBlockLeft();
+//     }
+//     else if (cmd == "right") {
+//         p.moveBlockRight();
+//     }
+//     else if (cmd == "down") {
+//         p.moveBlockDown();
+//     }
+//     else if (cmd == "clockwise") {
+//         p.rotateCW();
+//     }
+//     else if (cmd == "counterclockwise") {
+//         p.rotateCCW();
+//     }
+//     else if (cmd == "drop") {
+//         p.dropBlock();
+//         droppedByCommand = true;    // ✅ mark that we dropped
+
+//         if (p.getGameOver()) {
+//             gameOver = true;
+//         }
+//     }
+//     else if (cmd == "hold") {
+//         p.holdBlock();
+//     }
+//     else if (cmd == "levelup") {
+//         p.incLevel();
+//     }
+//     else if (cmd == "leveldown") {
+//         p.decLevel();
+//     }
+//     else if (cmd == "random") {
+//         p.setRandomMode(true);
+//     }
+//     else if (cmd == "restart") {
+//         for (auto& pl : players) {
+//             pl.reset();
+//         }
+//         gameOver = false;
+//         currPlayer = 0;
+//     }
+//     else if (cmd == "blind") {
+//         if (p.hasSpecialAction() && p.getNumSpecialActions() > 0) {
+//             Blind effect;
+//             otherPlayer().applyEffect(&effect);
+//             p.useOneSpecialAction();
+//         }
+//     }
+//     else if (cmd == "heavy") {
+//         if (p.hasSpecialAction() && p.getNumSpecialActions() > 0) {
+//             Heavy effect;
+//             otherPlayer().applyEffect(&effect);
+//             p.useOneSpecialAction();
+//         }
+//     }
+//     else if (cmd == "I" || cmd == "J" || cmd == "L" ||
+//              cmd == "O" || cmd == "S" || cmd == "Z" || cmd == "T") {
+//         if (p.hasSpecialAction() && p.getNumSpecialActions() > 0) {
+//             otherPlayer().forceNextBlock(cmd[0]);
+//             p.useOneSpecialAction();
+//         }
+//     }
+
+//     // If game ended from this command, do NOT switch turns
+//     if (gameOver) {
+//         notifyObservers();
+//         return;
+//     }
+
+//     // ✅ For blocks auto-dropped by Heavy during left/right/down
+//     bool heavyAutoDrop = p.hasJustDropped();
+//     if (heavyAutoDrop) {
+//         p.clearJustDropped();
+//     }
+
+//     // ✅ Exactly ONE turn switch if *either*:
+//     //   - user typed "drop"
+//     //   - or Heavy caused an auto-drop inside move
+//     if (droppedByCommand || heavyAutoDrop) {
+//         switchTurns();
+//     }
+
+//     // OBSERVER PATTERN: Notify all observers after state change!
+//     notifyObservers();
+// }
 
 void GameEngine::executeSequenceFile(const string& filename) {
     ifstream in{filename};
@@ -127,7 +246,6 @@ void GameEngine::start() {
     gameOver = false;
     currPlayer = 0;
 
-    // OBSERVER PATTERN: Initial notification
     notifyObservers();
 
     string line;
@@ -163,22 +281,18 @@ void GameEngine::handleCommand(const string& cmd) {
             string filename;
             Player& p = currentPlayer();
 
-            // Case 1: "norandom <file>" → load sequence + disable randomness
             if (iss >> filename) {
                 Level* logic = p.getLevelLogic();
                 if (logic) {
-                    logic->readFile(filename);   // load sequence
-                    logic->setRandom(false);     // disable RNG
+                    logic->readFile(filename);
+                    logic->setRandom(false);
                 }
             } else {
-                // Case 2: just "norandom" → toggle off randomness only
                 p.setRandomMode(false);
             }
 
-            // state changed → redraw
             notifyObservers();
         }
-
         else {
             executeSingleCommand(token);
         }

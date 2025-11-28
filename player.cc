@@ -34,6 +34,8 @@ relationships:
 
 export class SpecialAction;
 
+export class SpecialAction;
+
 export class Player {
     private:
         // fields 
@@ -51,6 +53,7 @@ export class Player {
         bool isGameOver = false;
         bool specialActionTriggered = false;  
         int numSpecialActions = 0;
+        bool justDropped = false;
 
         // helper functions
         void spawnInitialBlocks();
@@ -93,6 +96,8 @@ export class Player {
         Level* getLevelLogic() const;
         bool getGameOver() const;
         bool isHeavy() const;
+        bool hasJustDropped() const;
+        void clearJustDropped();
 
         // effects
         void applyEffect(SpecialAction* effect); 
