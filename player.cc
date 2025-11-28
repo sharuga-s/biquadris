@@ -34,6 +34,8 @@ relationships:
 
 export class SpecialAction;
 
+export class SpecialAction;
+
 export class Player {
     private:
         // fields 
