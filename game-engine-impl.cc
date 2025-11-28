@@ -16,6 +16,7 @@ import <vector>;
 
 using namespace std;
 
+//ctor
 GameEngine::GameEngine(int level1, const string& seq1, int level2, const string& seq2)
     : currPlayer{0}, ci{}, gameOver{false} {
     players.emplace_back(level1, seq1);
@@ -34,12 +35,11 @@ void GameEngine::switchTurns() {
     currPlayer = 1 - currPlayer;
 }
 
-
+//most basic method, does a single cmd at a time
 void GameEngine::executeSingleCommand(const string& cmd) {
     Player& p = currentPlayer();
-    bool droppedByCommand = false;   // ✅ did THIS command drop a block?
+    bool droppedByCommand = false;
 
-    // 1. player movement / actions
     if (cmd == "left") {
         p.moveBlockLeft();
     }
@@ -57,7 +57,7 @@ void GameEngine::executeSingleCommand(const string& cmd) {
     }
     else if (cmd == "drop") {
         p.dropBlock();
-        droppedByCommand = true;    // ✅ mark that we dropped
+        droppedByCommand = true; //we need this to differentiate from whenevr the Heavy SpecialAction drops a Block
 
         if (p.getGameOver()) {
             gameOver = true;
@@ -104,21 +104,17 @@ void GameEngine::executeSingleCommand(const string& cmd) {
         }
     }
 
-    // If game ended from this command, do NOT switch turns
     if (gameOver) {
         notifyObservers();
         return;
     }
 
-    // ✅ For blocks auto-dropped by Heavy during left/right/down
+    // check for blocks that are auto-dropped by Heavy during left/right/down
     bool heavyAutoDrop = p.hasJustDropped();
     if (heavyAutoDrop) {
         p.clearJustDropped();
     }
 
-    // ✅ Exactly ONE turn switch if *either*:
-    //   - user typed "drop"
-    //   - or Heavy caused an auto-drop inside move
     if (droppedByCommand || heavyAutoDrop) {
         switchTurns();
     }
@@ -131,104 +127,11 @@ void GameEngine::executeSingleCommand(const string& cmd) {
         }
     }
 
-
     // OBSERVER PATTERN: Notify all observers after state change!
     notifyObservers();
 }
 
-
-// void GameEngine::executeSingleCommand(const string& cmd) {
-//     Player& p = currentPlayer();
-//     bool droppedByCommand = false;   // ✅ did THIS command drop a block?
-
-//     // 1. player movement / actions
-//     if (cmd == "left") {
-//         p.moveBlockLeft();
-//     }
-//     else if (cmd == "right") {
-//         p.moveBlockRight();
-//     }
-//     else if (cmd == "down") {
-//         p.moveBlockDown();
-//     }
-//     else if (cmd == "clockwise") {
-//         p.rotateCW();
-//     }
-//     else if (cmd == "counterclockwise") {
-//         p.rotateCCW();
-//     }
-//     else if (cmd == "drop") {
-//         p.dropBlock();
-//         droppedByCommand = true;    // ✅ mark that we dropped
-
-//         if (p.getGameOver()) {
-//             gameOver = true;
-//         }
-//     }
-//     else if (cmd == "hold") {
-//         p.holdBlock();
-//     }
-//     else if (cmd == "levelup") {
-//         p.incLevel();
-//     }
-//     else if (cmd == "leveldown") {
-//         p.decLevel();
-//     }
-//     else if (cmd == "random") {
-//         p.setRandomMode(true);
-//     }
-//     else if (cmd == "restart") {
-//         for (auto& pl : players) {
-//             pl.reset();
-//         }
-//         gameOver = false;
-//         currPlayer = 0;
-//     }
-//     else if (cmd == "blind") {
-//         if (p.hasSpecialAction() && p.getNumSpecialActions() > 0) {
-//             Blind effect;
-//             otherPlayer().applyEffect(&effect);
-//             p.useOneSpecialAction();
-//         }
-//     }
-//     else if (cmd == "heavy") {
-//         if (p.hasSpecialAction() && p.getNumSpecialActions() > 0) {
-//             Heavy effect;
-//             otherPlayer().applyEffect(&effect);
-//             p.useOneSpecialAction();
-//         }
-//     }
-//     else if (cmd == "I" || cmd == "J" || cmd == "L" ||
-//              cmd == "O" || cmd == "S" || cmd == "Z" || cmd == "T") {
-//         if (p.hasSpecialAction() && p.getNumSpecialActions() > 0) {
-//             otherPlayer().forceNextBlock(cmd[0]);
-//             p.useOneSpecialAction();
-//         }
-//     }
-
-//     // If game ended from this command, do NOT switch turns
-//     if (gameOver) {
-//         notifyObservers();
-//         return;
-//     }
-
-//     // ✅ For blocks auto-dropped by Heavy during left/right/down
-//     bool heavyAutoDrop = p.hasJustDropped();
-//     if (heavyAutoDrop) {
-//         p.clearJustDropped();
-//     }
-
-//     // ✅ Exactly ONE turn switch if *either*:
-//     //   - user typed "drop"
-//     //   - or Heavy caused an auto-drop inside move
-//     if (droppedByCommand || heavyAutoDrop) {
-//         switchTurns();
-//     }
-
-//     // OBSERVER PATTERN: Notify all observers after state change!
-//     notifyObservers();
-// }
-
+//read from file to get Block sequence
 void GameEngine::executeSequenceFile(const string& filename) {
     ifstream in{filename};
     if (!in) {
@@ -262,6 +165,8 @@ void GameEngine::end() {
     cout << "Final Score P2: " << players[1].getScore() << '\n';
 }
 
+
+// takes cmd, expands it via CommandInterpreter, and xecutes each part of the cmd using executeSingleCommand
 void GameEngine::handleCommand(const string& cmd) {
     if (gameOver) return;
 
