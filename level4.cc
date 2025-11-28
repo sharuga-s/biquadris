@@ -10,7 +10,8 @@ using namespace std;
 export class Level4 : public Level {
     private:
         int levelNumber;
-        int noClearStreak;
+        int noClearStreak = 0;
+        int pendingStars = 0;
         bool randomMode = true;
         vector<char> sequence;
         int sequenceIndex = 0;

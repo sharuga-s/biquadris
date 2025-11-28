@@ -67,7 +67,7 @@ void GraphicsDisplay::drawCell(int boardIndex, int row, int col, char type, bool
     int colour;
 
     if (cellBlind) {
-        colour = Xwindow::Brown;
+        colour = Xwindow::Black;
     } else {
         switch (type) {
             case 'I': colour = Xwindow::Cyan;    break;
