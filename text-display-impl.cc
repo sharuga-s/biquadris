@@ -65,7 +65,6 @@ void TextDisplay::update() {
     if (!grid1 || !grid2) return;
     
     const int width = grid1->getCols(); // should be 11
-    const int boardPrintWidth = width * 2; // char + space per column
     const string sep = "       ";  // spacing between the two boards
     const int previewWidth = 4; // 4 columns for previews (next/current)
 

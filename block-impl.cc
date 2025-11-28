@@ -17,6 +17,8 @@ void Block::applyCWRotation() { // purpose: apply clockwise rotation on the bloc
         maxCol = max(maxCol, c);
     }
 
+    int width = maxCol + 1;
+
     // pair to store new cells
     vector<pair<int,int>> newCells; 
 
@@ -39,6 +41,8 @@ void Block::applyCCWRotation() { // purpose: apply c-clockwise rotation on the b
         maxCol = max(maxCol, c);
     }
     
+    int height = maxRow + 1;
+
     // pair to store new cells
     vector<pair<int,int>> newCells;
     for (auto [r, c] : cells) {

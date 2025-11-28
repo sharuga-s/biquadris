@@ -36,7 +36,8 @@ bool CommandInterpreter::isPrefixOf(const string &input, const string &full) con
         return false;
     }
     
-    for (int i = 0; i < input.size(); i++) {
+    // size_t used in loop to surpress warnings (applies to all other loops too)
+    for (size_t i = 0; i < input.size(); i++) {
         if (input[i] != full[i]) {
             return false;
         }
@@ -124,7 +125,7 @@ string CommandInterpreter::resolveAbbreviations(const string &cmd) {
 // purpose: numeric multiplier for commands that can take it
 string CommandInterpreter::applyMultiplier(const string &cmd) {
 
-    int i = 0;
+    size_t i = 0;
     while (i < cmd.length() && isdigit(cmd[i])) {
         i = i + 1;
     }
@@ -137,7 +138,7 @@ string CommandInterpreter::applyMultiplier(const string &cmd) {
 
     // make leading digits into a multiplier
     int mult = 0;
-    for (int j = 0; j < i; j++) {
+    for (size_t j = 0; j < i; j++) {
         mult = mult * 10 + (cmd[j] - '0');
     }
 
@@ -148,7 +149,7 @@ string CommandInterpreter::applyMultiplier(const string &cmd) {
 
     // separate command word and args
     string rest = "";
-    for (int j = i; j < cmd.length(); j++) {
+    for (size_t j = i; j < cmd.length(); j++) {
         rest = rest + cmd[j];
     }
 
@@ -156,25 +157,25 @@ string CommandInterpreter::applyMultiplier(const string &cmd) {
     string args = "";
 
     int spacePos = -1;
-    for (int j = 0; j < rest.length(); j++) {
+    for (size_t j = 0; j < rest.length(); j++) {
         if (rest[j] == ' ') {
-            spacePos = j;
+            spacePos = static_cast<int>(j);
             break;
         }
     }
 
     if (spacePos == -1) {
         // no args
-        for (int j = 0; j < (int)rest.length(); j++) {
+        for (size_t j = 0; j < rest.length(); j++) {
             word = word + rest[j];
         }
     } else {
         // build word
-        for (int j = 0; j < spacePos; j++) {
+        for (size_t j = 0; j < static_cast<size_t>(spacePos); j++) {
             word = word + rest[j];
         }
         // build args (starts at the space)
-        for (int j = spacePos; j < rest.length(); j++) {
+        for (size_t j = spacePos; j < rest.length(); j++) {
             args = args + rest[j];
         }
     }
