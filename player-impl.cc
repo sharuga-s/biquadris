@@ -17,9 +17,7 @@ import <iostream>;
 
 using namespace std;
 
-// =========================
-//  Helper: Create new block
-// =========================
+//helper to transform type to Block
 unique_ptr<Block> Player::createBlockFromType(char type) {
     switch (type) {
         case 'I': return make_unique<IBlock>(levelNumber);
@@ -34,21 +32,18 @@ unique_ptr<Block> Player::createBlockFromType(char type) {
     return nullptr;
 }
 
-// =========================
-//  Rebuild Level on levelUp/down - NOW USES FACTORY
-// =========================
+//levelup/down
 void Player::rebuildLevel() {
-    // Clamp boundaries
+    // boundaries
     if (levelNumber < 0) levelNumber = 0;
     if (levelNumber > 4) levelNumber = 4;
 
-    // Use factory to create new level, preserving sequence file
+    // use LevelFactory to create new level
+    // //preserve sequence file
     levelLogic = LevelFactory::createLevelPreservingSequence(levelNumber, levelLogic.get());
 }
 
-// =========================
- //  Spawn initial block pair
-// =========================
+//spawn initial blow pairs
 void Player::spawnInitialBlocks() {
     char t1 = levelLogic->generateNextBlockType();
     currBlock = createBlockFromType(t1);
@@ -61,9 +56,7 @@ void Player::spawnInitialBlocks() {
     }
 }
 
-// =========================
-//  Promote nextBlock → currBlock
-// =========================
+//move nextBlock → currBlock
 void Player::promoteNextBlock() {
     currBlock = move(nextBlock);
 
@@ -77,9 +70,7 @@ void Player::promoteNextBlock() {
     }
 }
 
-// =========================
-//  Hold / Swap blocks
-// =========================
+//hold/swap blocks
 void Player::holdBlock() {
     if (isGameOver || !currBlock) return;
     if (hasHeldThisTurn) return;
@@ -103,31 +94,23 @@ void Player::holdBlock() {
     }
 }
 
-// =========================
-//  Constructor - NOW USES FACTORY
-// =========================
+//ctor --> uses LevelFactory now
 Player::Player(int levelNum, const string& sequenceFile)
     : levelNumber(levelNum),
       grid(18, 11),
       justDropped{false} {
     
-    // Clamp level number
+    //boundaries
     if (levelNumber < 0) levelNumber = 0;
     if (levelNumber > 4) levelNumber = 4;
     
-    // Use factory to create initial level
+    //create initial level
     levelLogic = LevelFactory::createLevel(levelNumber, sequenceFile);
     
     spawnInitialBlocks();
 }
 
-// =========================
-//  Movement
-// =========================
-// Replace the movement methods in player-impl.cc with these:
-
-// Replace the movement methods in player-impl.cc with these:
-
+//move blocks
 void Player::moveBlockLeft() {
     if (isGameOver || !currBlock) return;
 
@@ -135,25 +118,24 @@ void Player::moveBlockLeft() {
     int c = currBlock->getCol() - 1;
 
     if (!grid.isValidPosition(*currBlock, r, c)) {
-        return;  // Can't move left
+        return;
     }
 
-    // Move left is valid
     currBlock->setPosition(r, c);
 
-    // Apply Heavy effect (moves down 2 rows per heavy source)
+    // apply Heavy effect (moves down 2 rows per heavy source)
     int totalHeavy = (currBlock->isBlockHeavy() ? 1 : 0) + (levelLogic->isHeavy() ? 1 : 0);
     if (totalHeavy > 0) {
         int rowsMoved = 0;
         
         int targetRows = 0;
 
-        // If level is heavy (3/4): fall 1 row
+        // if level is heavy (3/4): fall 1 row
         if (levelLogic->isHeavy()) {
             targetRows += 1;
         }
 
-        // If current block is heavy from special action: fall 2 rows
+        // If curr block is heavy from special action: fall (an extra) 2 rows
         if (currBlock->isBlockHeavy()) {
             targetRows += 2;
         }
@@ -165,19 +147,20 @@ void Player::moveBlockLeft() {
                 currBlock->setPosition(newRow, c);
                 rowsMoved++;
             } else {
-                // Hit something - drop immediately
+                // drop AS SOON AS the block hits smth
                 dropBlock();
                 return;
             }
         }
     }
 
-    // After move (with or without heavy), check if block is now grounded
+    //check if block is now grounded
     if (!grid.isValidPosition(*currBlock, currBlock->getRow() + 1, c)) {
         dropBlock();
     }
 }
 
+//move currBlock right
 void Player::moveBlockRight() {
     if (isGameOver || !currBlock) return;
 
@@ -185,13 +168,12 @@ void Player::moveBlockRight() {
     int c = currBlock->getCol() + 1;
 
     if (!grid.isValidPosition(*currBlock, r, c)) {
-        return;  // Can't move right
+        return;
     }
 
-    // Move right is valid
     currBlock->setPosition(r, c);
 
-    // Apply Heavy effect
+    // apply Heavy effect
     int totalHeavy = (currBlock->isBlockHeavy() ? 1 : 0) + (levelLogic->isHeavy() ? 1 : 0);
     if (totalHeavy > 0) {
         int rowsMoved = 0;
@@ -214,19 +196,19 @@ void Player::moveBlockRight() {
                 currBlock->setPosition(newRow, c);
                 rowsMoved++;
             } else {
-                // Hit something - drop immediately
                 dropBlock();
                 return;
             }
         }
     }
 
-    // After move (with or without heavy), check if block is now grounded
+    // check if block is now grounded
     if (!grid.isValidPosition(*currBlock, currBlock->getRow() + 1, c)) {
         dropBlock();
     }
 }
 
+//move currBlock down
 void Player::moveBlockDown() {
     if (isGameOver || !currBlock) return;
 
@@ -234,15 +216,14 @@ void Player::moveBlockDown() {
     int c = currBlock->getCol();
 
     if (!grid.isValidPosition(*currBlock, r, c)) {
-        // Can't move down - drop immediately
+        // can't move down --> drop immediately
         dropBlock();
         return;
     }
 
-    // Move down is valid
     currBlock->setPosition(r, c);
 
-    // Apply Heavy effect
+    // apply Heavy effect
     int totalHeavy = (currBlock->isBlockHeavy() ? 1 : 0) + (levelLogic->isHeavy() ? 1 : 0);
     if (totalHeavy > 0) {
         int rowsMoved = 0;
@@ -266,19 +247,19 @@ void Player::moveBlockDown() {
                 currBlock->setPosition(newRow, c);
                 rowsMoved++;
             } else {
-                // Hit something - drop immediately
                 dropBlock();
                 return;
             }
         }
     }
 
-    // After move (with or without heavy), check if block is now grounded
+    // check if block is now grounded
     if (!grid.isValidPosition(*currBlock, currBlock->getRow() + 1, c)) {
         dropBlock();
     }
 }
 
+//rotate currBlock clockWise
 void Player::rotateCW() {
     if (isGameOver || !currBlock) return;
 
@@ -287,7 +268,6 @@ void Player::rotateCW() {
     auto oldCells = currBlock->getCells();
     int oldRot = currBlock->getRotation();
 
-    // ----- old bounding box (local coords) -----
     int oldMinRow = 999, oldMaxRow = -1;
     int oldMinCol = 999, oldMaxCol = -1;
     for (auto [r, c] : oldCells) {
@@ -297,10 +277,9 @@ void Player::rotateCW() {
         if (c > oldMaxCol) oldMaxCol = c;
     }
 
-    // ----- perform local rotation -----
     currBlock->rotateCWLocal();
 
-    // ----- new bounding box (local coords) -----
+    //boundary info to meet the bottom left corner rule for rotations
     int newMinRow = 999, newMaxRow = -1;
     int newMinCol = 999, newMaxCol = -1;
     for (auto [r, c] : currBlock->getCells()) {
@@ -310,7 +289,6 @@ void Player::rotateCW() {
         if (c > newMaxCol) newMaxCol = c;
     }
 
-    // old bottom-left corner in *absolute* board coords
     int oldBottomLeftRow = oldRow + oldMaxRow;
     int oldBottomLeftCol = oldCol + oldMinCol;
 
@@ -328,7 +306,7 @@ void Player::rotateCW() {
         return;
     }
 
-    // ----- Heavy effect (level 3/4 and/or special heavy) -----
+    // heavy logic
     int totalHeavy = (currBlock->isBlockHeavy() ? 1 : 0) +
                      (levelLogic->isHeavy() ? 1 : 0);
 
@@ -343,7 +321,6 @@ void Player::rotateCW() {
             if (grid.isValidPosition(*currBlock, hr, hc)) {
                 currBlock->setPosition(hr, hc);
             } else {
-                // hit something while falling → lock in
                 dropBlock();
                 return;
             }
@@ -358,6 +335,7 @@ void Player::rotateCW() {
     }
 }
 
+//rotate currBlock counterClockWise
 void Player::rotateCCW() {
     if (isGameOver || !currBlock) return;
 
@@ -366,7 +344,6 @@ void Player::rotateCCW() {
     auto oldCells = currBlock->getCells();
     int oldRot = currBlock->getRotation();
 
-    // ----- old bounding box (local coords) -----
     int oldMinRow = 999, oldMaxRow = -1;
     int oldMinCol = 999, oldMaxCol = -1;
     for (auto [r, c] : oldCells) {
@@ -376,10 +353,8 @@ void Player::rotateCCW() {
         if (c > oldMaxCol) oldMaxCol = c;
     }
 
-    // ----- perform local rotation -----
     currBlock->rotateCCWLocal();
 
-    // ----- new bounding box (local coords) -----
     int newMinRow = 999, newMaxRow = -1;
     int newMinCol = 999, newMaxCol = -1;
     for (auto [r, c] : currBlock->getCells()) {
@@ -389,17 +364,14 @@ void Player::rotateCCW() {
         if (c > newMaxCol) newMaxCol = c;
     }
 
-    // old bottom-left corner in *absolute* board coords
     int oldBottomLeftRow = oldRow + oldMaxRow;
     int oldBottomLeftCol = oldCol + oldMinCol;
 
-    // choose new (row,col) so that bottom-left stays fixed
     int newRow = oldBottomLeftRow - newMaxRow;
     int newCol = oldBottomLeftCol - newMinCol;
 
     currBlock->setPosition(newRow, newCol);
 
-    // if rotation is illegal, revert
     if (!grid.isValidPosition(*currBlock, newRow, newCol)) {
         currBlock->setCells(oldCells);
         currBlock->setRotation(oldRot);
@@ -407,7 +379,6 @@ void Player::rotateCCW() {
         return;
     }
 
-    // ----- Heavy effect (level 3/4 and/or special heavy) -----
     int totalHeavy = (currBlock->isBlockHeavy() ? 1 : 0) +
                      (levelLogic->isHeavy() ? 1 : 0);
 
@@ -422,14 +393,12 @@ void Player::rotateCCW() {
             if (grid.isValidPosition(*currBlock, hr, hc)) {
                 currBlock->setPosition(hr, hc);
             } else {
-                // hit something while falling → lock in
                 dropBlock();
                 return;
             }
         }
     }
 
-    // after rotation (and heavy), if it's sitting on something, drop it
     int belowRow = currBlock->getRow() + 1;
     int curCol   = currBlock->getCol();
     if (!grid.isValidPosition(*currBlock, belowRow, curCol)) {
@@ -448,7 +417,7 @@ void Player::dropBlock() {
     int r = currBlock->getRow();
     int c = currBlock->getCol();
 
-    // Drop the block to its lowest valid row
+    // drop currBblock to lowest valid row
     while (grid.isValidPosition(*currBlock, r + 1, c)) {
         r += 1;
         currBlock->setPosition(r, c);
@@ -460,25 +429,25 @@ void Player::dropBlock() {
     int numCleared = 0;
     grid.clearFullRows(numCleared);
 
-    // Blind clears at the end of drop
+    // blind clears at the end of drop
     if (isBlind) isBlind = false;
 
-    // Add points for cleared rows
+    // add points for cleared rows (note**dependent on Level)
     if (numCleared > 0) {
         int pts = (levelNumber + numCleared) * (levelNumber + numCleared);
         addScore(pts);
     }
 
-    // Notify level (handles streak tracking)
+    // notify level (for streak tracking)
     levelLogic->onBlockPlaced(numCleared > 0);
 
-    // ===== LEVEL 4 STAR LOGIC =====
+    // level 4 star logic (drop a star in middle for every 5 blocks placed without a cleared row)
         if (levelLogic->shouldDropStar()) {
         // center column of the board
-        int midCol = grid.getCols() / 2;  // no hard-coded 6
+        int midCol = grid.getCols() / 2;
 
         auto star = createBlockFromType('*');
-        star->setPosition(0, midCol);  // spawn at top middle
+        star->setPosition(0, midCol); 
 
         int sr = 0;
         while (grid.isValidPosition(*star, sr + 1, midCol)) {
@@ -495,8 +464,6 @@ void Player::dropBlock() {
             addScore(pts);
         }
     }
-
-    // ===============================
 
     if (numCleared >= 2) {
         specialActionTriggered = true;
@@ -520,6 +487,7 @@ Block* Player::getHeldBlock() const { return heldBlock.get(); }
 int Player::getScore() const { return score; }
 int Player::getHiScore() const { return hiScore; }
 
+//note:depdendent on Levels and thier rules
 void Player::addScore(int pts) {
     score += pts;
     if (score > hiScore) hiScore = score;
@@ -534,10 +502,12 @@ Level* Player::getLevelLogic() const { return levelLogic.get(); }
 
 bool Player::getGameOver() const { return isGameOver; }
 
+//needed for blocks that heavy specialAction drops
 bool Player::hasJustDropped() const {
     return justDropped;
 }
 
+//after heavy effect is over with
 void Player::clearJustDropped() {
     justDropped = false;
 }
@@ -545,11 +515,13 @@ void Player::clearJustDropped() {
 // =========================
 //  Special effects
 // =========================
+
 void Player::applyEffect(SpecialAction* effect) {
     if (!effect || isGameOver) return;
     effect->apply(*this, grid);
 }
 
+//checks if associated Level is heavy
 bool Player::isHeavy() const {
     return levelLogic->isHeavy();
 }
@@ -594,6 +566,8 @@ void Player::decLevel() {
 // =========================
 //  Force next block
 // =========================
+
+//special action
 void Player::forceNextBlock(char type) {
     nextBlock = createBlockFromType(type);
 }
