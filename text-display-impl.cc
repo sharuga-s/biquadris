@@ -12,6 +12,22 @@ import <vector>;
 
 using namespace std;
 
+string colour(char ch) {
+    switch (ch) {
+        case 'I': return "\033[36mI\033[0m"; // cyan
+        case 'J': return "\033[34mJ\033[0m"; // blue
+        case 'L': return "\033[33mL\033[0m"; // yellow
+        case 'O': return "\033[97mO\033[0m"; // white
+        case 'S': return "\033[32mS\033[0m"; // green
+        case 'Z': return "\033[31mZ\033[0m"; // red
+        case 'T': return "\033[35mT\033[0m"; // magenta
+        case '*': return "\033[38;5;94m*\033[0m"; // brown/orange-brown - couldnt find ansi brown sadge
+        case '?': return "\033[90m?\033[0m"; // grey for blind
+        default:  return string(1, ch);
+    }
+}
+
+
 TextDisplay::TextDisplay() {}
 
 TextDisplay::TextDisplay(GameEngine* g) : game{g} {}
@@ -159,7 +175,7 @@ void TextDisplay::update() {
                 }
             }
             
-            cout << ch;
+            cout << colour(ch);
             if (c != width - 1) cout << ' ';
         }
         
@@ -190,7 +206,7 @@ void TextDisplay::update() {
                 }
             }
             
-            cout << ch;
+            cout << colour(ch);
             if (c != width - 1) cout << ' ';
         }
         
@@ -254,7 +270,7 @@ void TextDisplay::update() {
                         }
                     }
                 }
-                cout << ch;
+                cout << colour(ch);
             }
 
             cout << sep;
@@ -270,7 +286,7 @@ void TextDisplay::update() {
                         }
                     }
                 }
-                cout << ch;
+                cout << colour(ch);
             }
 
             cout << endl;
@@ -321,7 +337,7 @@ void TextDisplay::update() {
                         }
                     }
                 }
-                cout << ch;
+                cout << colour(ch);
             }
 
             cout << sep;
@@ -337,7 +353,7 @@ void TextDisplay::update() {
                         }
                     }
                 }
-                cout << ch;
+                cout << colour(ch);
             }
 
             cout << endl;
