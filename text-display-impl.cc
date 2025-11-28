@@ -27,14 +27,11 @@ void TextDisplay::notify() {
     currBlock2 = p2.getCurrentBlock();
     
     // cache the data for rendering
-    renderBoard(p1.getGrid(), p2.getGrid(), 
-                p1.getLevel(), p2.getLevel(),
-                p1.getBlind(), p2.getBlind());
+    renderBoard(p1.getGrid(), p2.getGrid(), p1.getLevel(), p2.getLevel(), p1.getBlind(), p2.getBlind());
     
     renderNext(p1.getNextBlock(), p2.getNextBlock());
-    
-    renderScores(p1.getScore(), p2.getScore(), 
-                 p1.getHiScore(), p2.getHiScore());
+    renderHeld(p1.getHeldBlock(), p2.getHeldBlock());
+    renderScores(p1.getScore(), p2.getScore(), p1.getHiScore(), p2.getHiScore());
     
     // actually render to cout
     update();
@@ -54,6 +51,11 @@ void TextDisplay::renderNext(Block* next1, Block* next2) {
     nextBlock2 = next2;
 }
 
+void TextDisplay::renderHeld(Block* h1, Block* h2) {
+    heldBlock1 = h1;
+    heldBlock2 = h2;
+}
+
 void TextDisplay::renderScores(int s1, int s2, int hi1, int hi2) {
     score1 = s1;
     score2 = s2;
@@ -66,17 +68,17 @@ void TextDisplay::update() {
     
     const int width = grid1->getCols(); // should be 11
     const string sep = "       ";  // spacing between the two boards
-    const int previewWidth = 4; // 4 columns for previews (next/current)
+    const int previewWidth = 21; // 4 columns for previews (next/current)
 
     // print scores and levels
     cout << "Level:    " << level1;
-    cout << "         Level:    " << level2 << endl;
+    cout << "                 Level:    " << level2 << endl;
     
     cout << "Score:    " << score1;
-    cout << "         Score:    " << score2 << endl;
+    cout << "                 Score:    " << score2 << endl;
     
     cout << "Hi Score: " << hiScore1;
-    cout << "         Hi Score: " << hiScore2 << endl;
+    cout << "                 Hi Score: " << hiScore2 << endl;
 
     // column numbers with spaces between columns
     for (int c = 0; c < width; ++c) {
@@ -264,6 +266,73 @@ void TextDisplay::update() {
                     for (auto [br, bc] : nextBlock2->getCells()) {
                         if ((br - minRow2) == r && (bc - minCol2) == c) {
                             ch = nextBlock2->getVal();
+                            break;
+                        }
+                    }
+                }
+                cout << ch;
+            }
+
+            cout << endl;
+        }
+    }
+
+    cout << endl;
+
+    // held blocks
+    cout << "Held:" << string(nextHeaderPad, ' ') << "Held:" << endl;
+
+    if (heldBlock1 || heldBlock2) {
+        // find bounding boxes
+        int minRowH1 = 999, maxRowH1 = -1, minColH1 = 999, maxColH1 = -1;
+        int minRowH2 = 999, maxRowH2 = -1, minColH2 = 999, maxColH2 = -1;
+
+        if (heldBlock1) {
+            for (auto [r, c] : heldBlock1->getCells()) {
+                if (r < minRowH1) minRowH1 = r;
+                if (r > maxRowH1) maxRowH1 = r;
+                if (c < minColH1) minColH1 = c;
+                if (c > maxColH1) maxColH1 = c;
+            }
+        }
+        if (heldBlock2) {
+            for (auto [r, c] : heldBlock2->getCells()) {
+                if (r < minRowH2) minRowH2 = r;
+                if (r > maxRowH2) maxRowH2 = r;
+                if (c < minColH2) minColH2 = c;
+                if (c > maxColH2) maxColH2 = c;
+            }
+        }
+
+        int heightH1 = (maxRowH1 >= 0) ? (maxRowH1 - minRowH1 + 1) : 0;
+        int heightH2 = (maxRowH2 >= 0) ? (maxRowH2 - minRowH2 + 1) : 0;
+        int rowsHeld = (heightH1 > heightH2) ? heightH1 : heightH2;
+
+        // print held blocks
+        for (int r = 0; r < rowsHeld; ++r) {
+            // P1
+            for (int c = 0; c < previewWidth; ++c) {
+                char ch = ' ';
+                if (heldBlock1) {
+                    for (auto [br, bc] : heldBlock1->getCells()) {
+                        if ((br - minRowH1) == r && (bc - minColH1) == c) {
+                            ch = heldBlock1->getVal();
+                            break;
+                        }
+                    }
+                }
+                cout << ch;
+            }
+
+            cout << sep;
+
+            // P2
+            for (int c = 0; c < previewWidth; ++c) {
+                char ch = ' ';
+                if (heldBlock2) {
+                    for (auto [br, bc] : heldBlock2->getCells()) {
+                        if ((br - minRowH2) == r && (bc - minColH2) == c) {
+                            ch = heldBlock2->getVal();
                             break;
                         }
                     }
