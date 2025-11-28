@@ -9,22 +9,7 @@ import <string>;
 
 using namespace std;
 
-// other imports here do not forget
-
 /*
-1. score : int
-2. hiScore : int
-3. level : Level* 
-4. currBlock : Block*
-5. nextBlock : Block*
-6. heldBlock: Block*
-7. isHolding : bool
-8. grid : Grid
-9. isBlind : bool
-10. gameOver : bool
-11. alive : bool
-12. heavy : int (0, 1, 2)
-
 relationships:
 - OWNS-A [aggregation] SpecialAction
 - HAS-A [composition] Block
