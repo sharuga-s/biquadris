@@ -153,8 +153,8 @@ void GameEngine::executeSingleCommand(const string& cmd) {
                 p.useOneSpecialAction();
             }
         } else {
-            cout << "You can’t use that command right now — no special action available." << endl;
-            executeSingleCommand("");
+            cout << "You can’t use that command right now — no special action available. Please try again:";
+            return;
         }
     }
 
@@ -276,23 +276,27 @@ void GameEngine::handleCommand(const string& cmd) {
             executeSequenceFile(filename);
         }
 
-        //use the sequence of blocks specified in the file
+       //use the sequence of blocks specified in the file (if specified, if not then break out)
         else if (token == "norandom") {
             string filename;
             Player& p = currentPlayer();
 
-            if (iss >> filename) {
-                Level* logic = p.getLevelLogic();
-                if (logic) {
-                    logic->readFile(filename);
-                    logic->setRandom(false);
-                }
-            } else {
-                p.setRandomMode(false);
+            // require a filename after "norandom"
+            if (!(iss >> filename)) {
+                cout << "Error: 'norandom' requires a sequence filename. Please try again." << endl;
+                // do NOT change random mode; just bail
+                continue;
+            }
+
+            Level* logic = p.getLevelLogic();
+            if (logic) {
+                logic->readFile(filename);
+                logic->setRandom(false);
             }
 
             notifyObservers();
         }
+
         else {
             executeSingleCommand(token);
         }
