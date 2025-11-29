@@ -71,10 +71,10 @@ void GameEngine::executeSingleCommand(const string& cmd) {
         // ✅ PROMPT immediately if a special action was earned
         // ✅ PROMPT immediately if a special action was earned
         if (p.hasSpecialAction() && p.getNumSpecialActions() > 0) {
-            cout << "\n🎉 You cleared multiple rows! Choose a special action:\n";
-            cout << "   heavy\n";
-            cout << "   blind\n";
-            cout << "   force <I/J/L/O/S/T/Z>\n";
+            cout << "\n🎉 You cleared multiple rows! Choose a special action:" << endl;
+            cout << "   heavy" << endl;
+            cout << "   blind" << endl;
+            cout << "   force <I/J/L/O/S/T/Z>" << endl;
             cout << "Enter your choice: ";
             cout.flush();
 
@@ -106,10 +106,10 @@ void GameEngine::executeSingleCommand(const string& cmd) {
                     otherPlayer().forceNextBlock(type);
                     p.useOneSpecialAction();
                 } else {
-                    cout << "Invalid format. Use: force I\n";
+                    cout << "Invalid format. Use: force I" << endl;
                 }
             } else {
-                cout << "Invalid choice, skipping special action.\n";
+                cout << "Invalid choice, skipping special action." << endl;
             }
 
             notifyObservers(); // update after effect
@@ -191,7 +191,7 @@ void GameEngine::executeSingleCommand(const string& cmd) {
 void GameEngine::executeSequenceFile(const string& filename) {
     ifstream in{filename};
     if (!in) {
-        cerr << "Cannot open sequence file: " << filename << '\n';
+        cerr << "Cannot open sequence file: " << filename << endl;
         return;
     }
 
@@ -216,9 +216,9 @@ void GameEngine::start() {
 }
 
 void GameEngine::end() {
-    cout << "Game over.\n";
-    cout << "Final Score P1: " << players[0].getScore() << '\n';
-    cout << "Final Score P2: " << players[1].getScore() << '\n';
+    cout << "Game over" << endl;
+    cout << "Final Score P1: " << players[0].getScore() << endl;
+    cout << "Final Score P2: " << players[1].getScore() << endl;
 }
 
 
