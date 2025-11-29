@@ -211,7 +211,7 @@ void GameEngine::executeSingleCommand(const string& cmd) {
 void GameEngine::executeSequenceFile(const string& filename) {
     ifstream in{filename};
     if (!in) {
-        cerr << "Cannot open sequence file: " << filename << '\n';
+        cerr << "Cannot open sequence file: " << filename << endl;
         return;
     }
 

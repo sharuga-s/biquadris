@@ -51,6 +51,8 @@ export class Player {
         ~Player() = default; // dtor
 
         // non-copyable but movable (needed for std::vector<Player>)
+        //     we use the delete keyword here to ensure that the following operations are NOT allowed
+        //     if copuying was allowed, this would result in duplicate objects
         Player(const Player&) = delete;
         Player& operator=(const Player&) = delete;
 
