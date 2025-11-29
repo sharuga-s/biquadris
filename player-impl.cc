@@ -273,8 +273,9 @@ void Player::rotateCW() {
     //position of the lower left corner of the smallest rectangle containing the block is preserved
     int oldMinRow = 999;
     int oldMaxRow = -1;
-    int oldMinCol = 999
+    int oldMinCol = 999;
     int oldMaxCol = -1;
+    
     for (auto [r, c] : oldCells) {
         if (r < oldMinRow) oldMinRow = r;
         if (r > oldMaxRow) oldMaxRow = r;
@@ -353,8 +354,10 @@ void Player::rotateCCW() {
     auto oldCells = currBlock->getCells();
     int oldRot = currBlock->getRotation();
 
-    int oldMinRow = 999, oldMaxRow = -1;
-    int oldMinCol = 999, oldMaxCol = -1;
+    int oldMinRow = 999;
+    int oldMaxRow = -1;
+    int oldMinCol = 999;
+    int oldMaxCol = -1;
     for (auto [r, c] : oldCells) {
         if (r < oldMinRow) oldMinRow = r;
         if (r > oldMaxRow) oldMaxRow = r;

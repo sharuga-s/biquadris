@@ -27,6 +27,7 @@ string colour(char ch) {
     }
 }
 
+const int GRID_ROWS = 18;
 
 TextDisplay::TextDisplay() {}
 
@@ -139,7 +140,7 @@ void TextDisplay::update() {
     }
     
     // print the boards side by side (rows 0-17 + reserve rows at top)
-    for (int r = 0; r < 18; ++r) {
+    for (int r = 0; r < GRID_ROWS; ++r) {
         if (r == 3) {
             // just visual indicator of resevre vs play area
             for (int c = 0; c < width; ++c) {
