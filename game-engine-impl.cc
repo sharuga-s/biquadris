@@ -35,7 +35,7 @@ void GameEngine::switchTurns() {
     currPlayer = 1 - currPlayer;
 }
 
-//most basic method, does a single cmd at a time
+//parses (performs) a single cmd at a time
 void GameEngine::executeSingleCommand(const string& cmd) {
     Player& p = currentPlayer();
     bool droppedByCommand = false;
@@ -68,10 +68,10 @@ void GameEngine::executeSingleCommand(const string& cmd) {
         // prompt for special action after clearing multiple rows
         if (p.hasSpecialAction()) {
             while (true) {
-                cout << "\nYou cleared multiple rows! Choose a special action:" << endl;
-                cout << "   heavy" << endl;
-                cout << "   blind" << endl;
-                cout << "   force I/J/L/O/S/T/Z\n";
+                cout << "\nYou cleared 2+ rows! Choose a special action:" << endl;
+                cout << "1. heavy" << endl;
+                cout << "2. blind" << endl;
+                cout << "3. force I/J/L/O/S/T/Z" << endl;
                 cout << "Enter your choice: ";
 
                 string choice;
@@ -81,26 +81,32 @@ void GameEngine::executeSingleCommand(const string& cmd) {
                 }
 
                 if (choice == "heavy") {
-                    Heavy effect; otherPlayer().applyEffect(&effect);
-                    p.useOneSpecialAction(); break;
+                    Heavy effect;
+                    otherPlayer().applyEffect(&effect);
+                    p.useOneSpecialAction();
+                    break;
                 }
                 else if (choice == "blind") {
-                    Blind effect; otherPlayer().applyEffect(&effect);
-                    p.useOneSpecialAction(); break;
+                    Blind effect;
+                    otherPlayer().applyEffect(&effect);
+                    p.useOneSpecialAction();
+                    break;
                 }
                 else {
                     istringstream iss(choice);
-                    string word; char typeChar;
+                    string word;
+                    char typeChar;
                     if (iss >> word >> typeChar && word == "force") {
                         if (typeChar >= 'a' && typeChar <= 'z') typeChar = typeChar - 'a' + 'A';
                         if (typeChar == 'I' || typeChar == 'J' || typeChar == 'L' ||
                             typeChar == 'O' || typeChar == 'S' || typeChar == 'Z' ||
                             typeChar == 'T') {
                             otherPlayer().forceNextBlock(typeChar);
-                            p.useOneSpecialAction(); break;
+                            p.useOneSpecialAction();
+                            break;
                         }
                     }
-                    cout << "Invalid choice. Please enter: heavy, blind, or force I/J/L/O/S/T/Z.\n";
+                    cout << "Invalid choice. Please enter: heavy, blind, or force I/J/L/O/S/T/Z." << endl;
                 }
             }
             notifyObservers();
@@ -120,7 +126,7 @@ void GameEngine::executeSingleCommand(const string& cmd) {
     }
     else if (cmd == "restart") {
         for (auto &pl : players) pl.reset();
-        gameOver = false;
+        gameOver = false; //incase
         currPlayer = 0;
     }
 
@@ -130,17 +136,19 @@ void GameEngine::executeSingleCommand(const string& cmd) {
              cmd == "O" || cmd == "S" || cmd == "Z" || cmd == "T") {
         if (p.hasSpecialAction()) {
             if (cmd == "heavy") {
-                Heavy effect; otherPlayer().applyEffect(&effect);
+                Heavy effect;
+                otherPlayer().applyEffect(&effect);
                 p.useOneSpecialAction();
             }
             else if (cmd == "blind") {
-                Blind effect; otherPlayer().applyEffect(&effect);
+                Blind effect;
+                otherPlayer().applyEffect(&effect);
                 p.useOneSpecialAction();
             }
             else if (cmd == "force") {
-                cout << "Usage: force I/J/L/O/S/T/Z\n";
+                cout << "Usage: force I/J/L/O/S/T/Z" << endl;
             }
-            else { // block letters
+            else { //letters; this is a shorthand for force
                 otherPlayer().forceNextBlock(cmd[0]);
                 p.useOneSpecialAction();
             }
@@ -177,7 +185,7 @@ void GameEngine::executeSingleCommand(const string& cmd) {
                      token == "I" || token == "J" || token == "L" ||
                      token == "O" || token == "S" || token == "Z" || token == "T")
                     && !p.hasSpecialAction()) {
-                    cout << "You can’t use that command right now — no special action available.\n";
+                    cout << "You can’t use that command right now — no special action available." << endl;
                     executedSomething = false;
                     continue;
                 }
@@ -185,11 +193,14 @@ void GameEngine::executeSingleCommand(const string& cmd) {
                 executedSomething = true;
             }
 
-            if (executedSomething || gameOver) return;
+            if (executedSomething || gameOver) {
+                return;
+            }
         }
     }
 
-    // post-turn
+    // turn is now over, take care of turn/gameover stuff
+
     if (gameOver) {
         notifyObservers();
         return;
@@ -244,10 +255,14 @@ void GameEngine::end() {
 
 // takes cmd, expands it via CommandInterpreter, and xecutes each part of the cmd using executeSingleCommand
 void GameEngine::handleCommand(const string& cmd) {
-    if (gameOver) return;
+    if (gameOver) {
+        return;
+    }
 
     string expanded = ci.parse(cmd);
-    if (expanded.empty()) return;
+    if (expanded.empty()) {
+        return;
+    }
 
     istringstream iss{expanded};
     string token;
