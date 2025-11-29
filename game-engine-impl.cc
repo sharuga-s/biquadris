@@ -68,9 +68,9 @@ void GameEngine::executeSingleCommand(const string& cmd) {
         // prompt for special action after clearing multiple rows
         if (p.hasSpecialAction()) {
             while (true) {
-                cout << "\nYou cleared multiple rows! Choose a special action:\n";
-                cout << "   heavy\n";
-                cout << "   blind\n";
+                cout << "\nYou cleared multiple rows! Choose a special action:" << endl;
+                cout << "   heavy" << endl;
+                cout << "   blind" << endl;
                 cout << "   force I/J/L/O/S/T/Z\n";
                 cout << "Enter your choice: ";
 
