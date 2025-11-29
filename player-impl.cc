@@ -301,33 +301,22 @@ void Player::rotateCW() {
         return;
     }
 
-    // heavy logic
-    bool levelHeavy = levelLogic->isHeavy();
-    // special-action heavy should NOT affect rotations
-
-    if (levelHeavy) {
-        int targetRows = 1; // only level heavy
-
-        for (int i = 0; i < targetRows; ++i) {
-            int hr = currBlock->getRow() + 1;
-            int hc = currBlock->getCol();
-            if (grid.isValidPosition(*currBlock, hr, hc)) {
-                currBlock->setPosition(hr, hc);
-            } else {
-                dropBlock();
-                return;
-            }
+    if (levelLogic->isHeavy()) {
+        int hr = currBlock->getRow() + 1;
+        if (grid.isValidPosition(*currBlock, hr, newCol)) {
+            currBlock->setPosition(hr, newCol);
+        } else {
+            dropBlock();
+            return;
         }
     }
 
-    // after rotation (and heavy), if it's sitting on smth, drop it
+    // now check if it’s grounded after heavy fall
     int belowRow = currBlock->getRow() + 1;
-    int curCol   = currBlock->getCol();
-    if (!grid.isValidPosition(*currBlock, belowRow, curCol)) {
+    if (!grid.isValidPosition(*currBlock, belowRow, newCol)) {
         dropBlock();
     }
 }
-
 //rotate currBlock counterClockWise
 void Player::rotateCCW() {
     if (isGameOver || !currBlock) return;
@@ -374,28 +363,23 @@ void Player::rotateCCW() {
         return;
     }
 
-    bool levelHeavy = levelLogic->isHeavy();
-
-    if (levelHeavy) {
-        int targetRows = 1;
-
-        for (int i = 0; i < targetRows; ++i) {
-            int hr = currBlock->getRow() + 1;
-            int hc = currBlock->getCol();
-            if (grid.isValidPosition(*currBlock, hr, hc)) {
-                currBlock->setPosition(hr, hc);
-            } else {
-                dropBlock();
-                return;
-            }
+    //accomodate heavy levels, where it should fall even on rotations
+    if (levelLogic->isHeavy()) {
+        int hr = currBlock->getRow() + 1;
+        if (grid.isValidPosition(*currBlock, hr, newCol)) {
+            currBlock->setPosition(hr, newCol);
+        } else {
+            dropBlock();
+            return;
         }
     }
 
+    // now check if it’s grounded after heavy fall
     int belowRow = currBlock->getRow() + 1;
-    int curCol = currBlock->getCol();
-    if (!grid.isValidPosition(*currBlock, belowRow, curCol)) {
+    if (!grid.isValidPosition(*currBlock, belowRow, newCol)) {
         dropBlock();
     }
+
 }
 
 // drop + scoring logic

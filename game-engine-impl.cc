@@ -153,7 +153,7 @@ void GameEngine::executeSingleCommand(const string& cmd) {
                 p.useOneSpecialAction();
             }
         } else {
-            cout << "You can’t use that command right now — no special action available. Please try again:";
+            cout << "You can’t use that command right now — no special action available. Please try again: ";
             return;
         }
     }
@@ -283,7 +283,7 @@ void GameEngine::handleCommand(const string& cmd) {
 
             // require a filename after "norandom"
             if (!(iss >> filename)) {
-                cout << "Error: 'norandom' requires a sequence filename. Please try again." << endl;
+                cout << "Error: 'norandom' requires a sequence filename. Please try again: " << endl;
                 // do NOT change random mode; just bail
                 continue;
             }
