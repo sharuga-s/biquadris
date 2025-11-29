@@ -40,7 +40,6 @@ void GameEngine::executeSingleCommand(const string& cmd) {
     Player& p = currentPlayer();
     bool droppedByCommand = false;
 
-    // ---------------- Basic actions ----------------
     if (cmd == "left") {
         p.moveBlockLeft();
     }
@@ -60,62 +59,54 @@ void GameEngine::executeSingleCommand(const string& cmd) {
         p.dropBlock();
         droppedByCommand = true;
 
-        // show board before prompting
         notifyObservers();
-
         if (p.getGameOver()) {
             gameOver = true;
             return;
         }
 
-        // ✅ PROMPT immediately if a special action was earned
-        // ✅ PROMPT immediately if a special action was earned
-        if (p.hasSpecialAction() && p.getNumSpecialActions() > 0) {
-            cout << "\n🎉 You cleared multiple rows! Choose a special action:" << endl;
-            cout << "   heavy" << endl;
-            cout << "   blind" << endl;
-            cout << "   force <I/J/L/O/S/T/Z>" << endl;
-            cout << "Enter your choice: ";
-            cout.flush();
+        // prompt for special action after clearing multiple rows
+        if (p.hasSpecialAction()) {
+            while (true) {
+                cout << "\nYou cleared multiple rows! Choose a special action:\n";
+                cout << "   heavy\n";
+                cout << "   blind\n";
+                cout << "   force I/J/L/O/S/T/Z\n";
+                cout << "Enter your choice: ";
 
-            // ✅ simple input flush without numeric_limits
-            cin.clear();
-            while (cin.peek() == '\n') {
-                cin.get(); // consume stray newline(s)
-            }
-
-            string choice;
-            getline(cin, choice);
-
-            if (choice == "heavy") {
-                Heavy effect;
-                otherPlayer().applyEffect(&effect);
-                p.useOneSpecialAction();
-            }
-            else if (choice == "blind") {
-                Blind effect;
-                otherPlayer().applyEffect(&effect);
-                p.useOneSpecialAction();
-            }
-            else if (choice.rfind("force", 0) == 0) {
-                istringstream iss(choice);
-                string word, block;
-                iss >> word >> block;
-                if (!block.empty()) {
-                    char type = toupper(block[0]);
-                    otherPlayer().forceNextBlock(type);
-                    p.useOneSpecialAction();
-                } else {
-                    cout << "Invalid format. Use: force I" << endl;
+                string choice;
+                if (!getline(cin, choice)) {
+                    gameOver = true;
+                    return;
                 }
-            } else {
-                cout << "Invalid choice, skipping special action." << endl;
+
+                if (choice == "heavy") {
+                    Heavy effect; otherPlayer().applyEffect(&effect);
+                    p.useOneSpecialAction(); break;
+                }
+                else if (choice == "blind") {
+                    Blind effect; otherPlayer().applyEffect(&effect);
+                    p.useOneSpecialAction(); break;
+                }
+                else {
+                    istringstream iss(choice);
+                    string word; char typeChar;
+                    if (iss >> word >> typeChar && word == "force") {
+                        if (typeChar >= 'a' && typeChar <= 'z') typeChar = typeChar - 'a' + 'A';
+                        if (typeChar == 'I' || typeChar == 'J' || typeChar == 'L' ||
+                            typeChar == 'O' || typeChar == 'S' || typeChar == 'Z' ||
+                            typeChar == 'T') {
+                            otherPlayer().forceNextBlock(typeChar);
+                            p.useOneSpecialAction(); break;
+                        }
+                    }
+                    cout << "Invalid choice. Please enter: heavy, blind, or force I/J/L/O/S/T/Z.\n";
+                }
             }
-
-            notifyObservers(); // update after effect
+            notifyObservers();
         }
-
     }
+
     else if (cmd == "hold") {
         p.holdBlock();
     }
@@ -133,65 +124,94 @@ void GameEngine::executeSingleCommand(const string& cmd) {
         gameOver = false;
         currPlayer = 0;
     }
-    else if (cmd == "blind") {
-        if (p.hasSpecialAction() && p.getNumSpecialActions() > 0) {
-            Blind effect;
-            otherPlayer().applyEffect(&effect);
-            p.useOneSpecialAction();
-        }
-    }
-    else if (cmd == "heavy") {
-        if (p.hasSpecialAction() && p.getNumSpecialActions() > 0) {
-            Heavy effect;
-            otherPlayer().applyEffect(&effect);
-            p.useOneSpecialAction();
-        }
-    }
-    else if (cmd == "I" || cmd == "J" || cmd == "L" ||
+
+    // ===== Special-action restricted commands =====
+    else if (cmd == "heavy" || cmd == "blind" || cmd == "force" ||
+             cmd == "I" || cmd == "J" || cmd == "L" ||
              cmd == "O" || cmd == "S" || cmd == "Z" || cmd == "T") {
-        if (p.hasSpecialAction() && p.getNumSpecialActions() > 0) {
-            otherPlayer().forceNextBlock(cmd[0]);
-            p.useOneSpecialAction();
+        if (p.hasSpecialAction()) {
+            if (cmd == "heavy") {
+                Heavy effect; otherPlayer().applyEffect(&effect);
+                p.useOneSpecialAction();
+            }
+            else if (cmd == "blind") {
+                Blind effect; otherPlayer().applyEffect(&effect);
+                p.useOneSpecialAction();
+            }
+            else if (cmd == "force") {
+                cout << "Usage: force I/J/L/O/S/T/Z\n";
+            }
+            else { // block letters
+                otherPlayer().forceNextBlock(cmd[0]);
+                p.useOneSpecialAction();
+            }
+        } else {
+            cout << "You can’t use that command right now — no special action available." << endl;
+            executeSingleCommand("");
         }
     }
+
     else if (cmd == "quit") {
         gameOver = true;
         return;
     }
 
-    // ---------------- Turn + observer handling ----------------
+    // ===== Re-prompt loop for invalid commands =====
+    else {
+        while (true) {
+            cout << "Please enter a valid command: ";
+
+            string line;
+            if (!getline(cin, line)) {
+                gameOver = true;
+                return;
+            }
+
+            string expanded = ci.parse(line);
+
+            istringstream iss(expanded);
+            string token;
+            bool executedSomething = false;
+
+            while (iss >> token && !gameOver) {
+                if ((token == "heavy" || token == "blind" || token == "force" ||
+                     token == "I" || token == "J" || token == "L" ||
+                     token == "O" || token == "S" || token == "Z" || token == "T")
+                    && !p.hasSpecialAction()) {
+                    cout << "You can’t use that command right now — no special action available.\n";
+                    executedSomething = false;
+                    continue;
+                }
+                executeSingleCommand(token);
+                executedSomething = true;
+            }
+
+            if (executedSomething || gameOver) return;
+        }
+    }
+
+    // ===== Post-turn handling =====
     if (gameOver) {
         notifyObservers();
         return;
     }
 
-    bool heavyAutoDrop = p.hasJustDropped();
-    if (heavyAutoDrop) {
-        p.clearJustDropped();
-    }
+    bool heavyAutoDrop = p.hasJustDropped(); // check if heavy effect caused drop
+    if (heavyAutoDrop) p.clearJustDropped();
 
     if (droppedByCommand || heavyAutoDrop) {
-        switchTurns();
+        switchTurns(); // next player's turn
         notifyObservers();
-    }
-
-    if (!gameOver) {
-        Player &next = currentPlayer();
-        if (next.hasJustDropped()) {
-            next.clearJustDropped();
-            switchTurns();
-        }
     }
 
     notifyObservers();
 }
 
-
-//read from file to get Block sequence
+//read from file to get sequence of commands from a file, handle the one by one
 void GameEngine::executeSequenceFile(const string& filename) {
     ifstream in{filename};
     if (!in) {
-        cerr << "Cannot open sequence file: " << filename << endl;
+        cerr << "Cannot open sequence file: " << filename << '\n';
         return;
     }
 
@@ -215,10 +235,11 @@ void GameEngine::start() {
     end();
 }
 
+//game over, output scores
 void GameEngine::end() {
-    cout << "Game over" << endl;
-    cout << "Final Score P1: " << players[0].getScore() << endl;
-    cout << "Final Score P2: " << players[1].getScore() << endl;
+    cout << "Game over.\n";
+    cout << "Final Score P1: " << players[0].getScore() << ", Hi Score: " << players[0].getHiScore() << endl;
+    cout << "Final Score P2: " << players[1].getScore() << ", Hi Score: " << players[1].getHiScore() << endl;
 }
 
 
@@ -233,11 +254,15 @@ void GameEngine::handleCommand(const string& cmd) {
     string token;
 
     while (iss >> token && !gameOver) {
+
+        //use the commands provided in the file
         if (token == "sequence") {
             string filename;
             if (!(iss >> filename)) break;
             executeSequenceFile(filename);
         }
+
+        //use the sequence of blocks specified in the file
         else if (token == "norandom") {
             string filename;
             Player& p = currentPlayer();
