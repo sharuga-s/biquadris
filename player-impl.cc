@@ -56,7 +56,7 @@ void Player::spawnInitialBlocks() {
     }
 }
 
-//move nextBlock → currBlock
+//move nextBlock -> currBlock
 void Player::promoteNextBlock() {
     currBlock = move(nextBlock);
 
@@ -94,7 +94,7 @@ void Player::holdBlock() {
     }
 }
 
-//ctor --> uses LevelFactory now
+//ctor -> uses LevelFactory now
 Player::Player(int levelNum, const string& sequenceFile)
     : levelNumber(levelNum),
       grid(18, 11),
@@ -135,7 +135,7 @@ void Player::moveBlockLeft() {
             targetRows += 1;
         }
 
-        // If curr block is heavy from special action: fall (an extra) 2 rows
+        // if curr block is heavy from special action: fall (an extra) 2 rows
         if (currBlock->isBlockHeavy()) {
             targetRows += 2;
         }
@@ -179,12 +179,12 @@ void Player::moveBlockRight() {
         int rowsMoved = 0;
         int targetRows = 0;
 
-        // If level is heavy (3/4): fall 1 row
+        // if level is heavy (3/4): fall 1 row
         if (levelLogic->isHeavy()) {
             targetRows += 1;
         }
 
-        // If current block is heavy from special action: fall 2 rows
+        // if current block is heavy from special action: fall 2 rows
         if (currBlock->isBlockHeavy()) {
             targetRows += 2;
         }
@@ -230,12 +230,12 @@ void Player::moveBlockDown() {
         
         int targetRows = 0;
 
-        // If level is heavy (3/4): fall 1 row
+        // if level is heavy (3/4): fall 1 row
         if (levelLogic->isHeavy()) {
             targetRows += 1;
         }
 
-        // If current block is heavy from special action: fall 2 rows
+        // if current block is heavy from special action: fall 2 rows
         if (currBlock->isBlockHeavy()) {
             targetRows += 2;
         }
@@ -406,9 +406,7 @@ void Player::rotateCCW() {
     }
 }
 
-// =========================
-//  DROP + scoring
-// =========================
+// drop + scoring mechs
 void Player::dropBlock() {
     if (isGameOver || !currBlock) return;
 
@@ -476,9 +474,7 @@ void Player::dropBlock() {
     if (isBlind) isBlind = false;
 }
 
-// =========================
-//  Getters
-// =========================
+//getters
 Grid& Player::getGrid() { return grid; }
 const Grid& Player::getGrid() const { return grid; }
 
@@ -514,10 +510,7 @@ void Player::clearJustDropped() {
     justDropped = false;
 }
 
-// =========================
-//  Special effects
-// =========================
-
+// special effects
 void Player::applyEffect(SpecialAction* effect) {
     if (!effect || isGameOver) return;
     effect->apply(*this, grid);
@@ -550,9 +543,7 @@ void Player::useOneSpecialAction() {
     }
 }
 
-// =========================
-//  Level up/down
-// =========================
+// level up and down
 void Player::incLevel() {
     levelNumber++;
     if (levelNumber > 4) levelNumber = 4;
@@ -565,9 +556,7 @@ void Player::decLevel() {
     rebuildLevel();
 }
 
-// =========================
-//  Force next block
-// =========================
+// FORCE
 
 //special action
 void Player::forceNextBlock(char type) {
@@ -581,16 +570,12 @@ void Player::forceNextBlock(char type) {
 
 }
 
-// =========================
-//  Random mode toggle
-// =========================
+// random mode toggle
 void Player::setRandomMode(bool enabled) {
     if (levelLogic) levelLogic->setRandom(enabled);
 }
 
-// =========================
-//  Full reset between games
-// =========================
+// reset btwn games
 void Player::reset() {
     grid.reset();
 

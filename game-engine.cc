@@ -1,7 +1,7 @@
 export module GameEngine;
 
 import Player;
-import Subject;  // Import Subject base class
+import Subject; 
 import CommandInterpreter;
 
 import <vector>;
@@ -9,7 +9,7 @@ import <string>;
 
 using namespace std;
 
-export class GameEngine : public Subject {  // Inherit from Subject!
+export class GameEngine : public Subject {  // inherit from Subject!
     private:
         // fields
         int currPlayer = 0;

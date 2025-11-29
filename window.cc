@@ -15,6 +15,7 @@ export class Xwindow {
  public:
   Xwindow(int width=500, int height=500); // ctor
   ~Xwindow(); // dtor
+  // prevent copying, just like in player
   Xwindow(const Xwindow&) = delete;
   Xwindow &operator=(const Xwindow&) = delete;
 

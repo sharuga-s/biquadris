@@ -106,7 +106,6 @@ void GameEngine::executeSingleCommand(const string& cmd) {
             notifyObservers();
         }
     }
-
     else if (cmd == "hold") {
         p.holdBlock();
     }
@@ -125,7 +124,7 @@ void GameEngine::executeSingleCommand(const string& cmd) {
         currPlayer = 0;
     }
 
-    // ===== Special-action restricted commands =====
+    // special action restricted cmds
     else if (cmd == "heavy" || cmd == "blind" || cmd == "force" ||
              cmd == "I" || cmd == "J" || cmd == "L" ||
              cmd == "O" || cmd == "S" || cmd == "Z" || cmd == "T") {
@@ -156,7 +155,7 @@ void GameEngine::executeSingleCommand(const string& cmd) {
         return;
     }
 
-    // ===== Re-prompt loop for invalid commands =====
+    // reprompt loop for invalid commands (ie, typos)
     else {
         while (true) {
             cout << "Please enter a valid command: ";
@@ -190,7 +189,7 @@ void GameEngine::executeSingleCommand(const string& cmd) {
         }
     }
 
-    // ===== Post-turn handling =====
+    // post-turn
     if (gameOver) {
         notifyObservers();
         return;

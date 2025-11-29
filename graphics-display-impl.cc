@@ -78,24 +78,7 @@ void GraphicsDisplay::drawCell(int boardIndex, int row, int col, char type, bool
     int x = baseX + col * cellSize;
     int y = boardTop + (row - visibleTopRow) * cellSize;
 
-    int colour;
-
-    if (cellBlind) {
-        colour = Xwindow::Black;
-    } else {
-        switch (type) {
-            case 'I': colour = Xwindow::Cyan;    break;
-            case 'J': colour = Xwindow::Blue;    break;
-            case 'L': colour = Xwindow::Orange;  break;
-            case 'O': colour = Xwindow::Yellow;  break;
-            case 'S': colour = Xwindow::Green;   break;
-            case 'Z': colour = Xwindow::Red;     break;
-            case 'T': colour = Xwindow::Magenta; break;
-            case '*': colour = Xwindow::Brown;   break;
-            case ' ': colour = Xwindow::White;   break;
-            default:  colour = Xwindow::White;   break;
-        }
-    }
+    int colour = cellBlind ? Xwindow::Black : getColorForBlockType(type);
 
     // draw border
     xw->fillRectangle(x, y, cellSize, cellSize, Xwindow::Black);
@@ -393,4 +376,8 @@ void GraphicsDisplay::notify() {
     renderHeld(p1.getHeldBlock(), p2.getHeldBlock());
     renderScores( p1.getScore(), p2.getScore(), p1.getHiScore(), p2.getHiScore(), p1.getLevel(), p2.getLevel()
     );
+}
+
+void GraphicsDisplay::setGame(GameEngine* g) {
+    game = g;
 }

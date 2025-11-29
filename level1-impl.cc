@@ -7,9 +7,9 @@ import <cstdlib>;   // rand, srand
 
 using namespace std;
 
-// Level 1: The block selector will randomly choose a block with probabilities skewed such that
+// Level 1: the block selector will randomly choose a block with probabilities skewed such that
 // S and Z blocks are selected with probability 1/12 each, and the other blocks are selected with
-// probability 1/6 each.
+// probability 1/6 each
 
 Level1::Level1()
     : levelNumber{1} 
@@ -33,7 +33,7 @@ char Level1::generateNextBlockType() {
     // 5: O     (2)
     // 6: T     (2)
 
-    int r = rand() % 12; //NOTE: WE NEED srand(time(nullptr)) IN GAMEENGINE, it to seed rand()
+    int r = rand() % 12; 
 
     if (r == 0) {
         return 'S';

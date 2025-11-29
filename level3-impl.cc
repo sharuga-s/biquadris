@@ -9,7 +9,7 @@ import <cstdlib>;
 
 using namespace std;
 
-// Level 3: The block selector will randomly choose a block with probabilities skewed such that
+// Level 3: the block selector will randomly choose a block with probabilities skewed such that
 // S and Z blocks are selected with probability 2/9 each, and the other blocks are selected with
 // probability 1/9 each. Moreover, blocks generated in level 3 are “heavy”: every command to
 // move or rotate the block will be followed immediately and automatically by a downward move

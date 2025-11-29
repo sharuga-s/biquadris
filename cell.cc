@@ -1,9 +1,10 @@
 export module Cell;
 
 export class Cell {
-    int row;
-    int col;
-    char val;
+    private:
+        int row;
+        int col;
+        char val;
 
     public:
         // ' ' represents empty

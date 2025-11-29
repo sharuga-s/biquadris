@@ -7,7 +7,7 @@ import <cstdlib>;
 
 using namespace std;
 
-// Level 2: All blocks are selected with equal probability
+// Level 2: all blocks are selected with equal probability
 
 Level2::Level2()
     : levelNumber{2}
