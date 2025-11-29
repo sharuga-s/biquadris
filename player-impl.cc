@@ -226,34 +226,23 @@ void Player::moveBlockDown() {
     currBlock->setPosition(r, c);
 
     // apply Heavy effect
-    int totalHeavy = (currBlock->isBlockHeavy() ? 1 : 0) + (levelLogic->isHeavy() ? 1 : 0);
-    if (totalHeavy > 0) {
-        int rowsMoved = 0;
-        
-        int targetRows = 0;
+    bool levelHeavy = levelLogic->isHeavy();
+    // special-action heavy does NOT apply to "down"
 
-        // if level is heavy (3/4): fall 1 row
-        if (levelLogic->isHeavy()) {
-            targetRows += 1;
-        }
+    if (levelHeavy) {
+        int targetRows = 1;  // only level heavy: +1 row
 
-        // if current block is heavy from special action: fall 2 rows
-        if (currBlock->isBlockHeavy()) {
-            targetRows += 2;
-        }
-
-        
         for (int i = 0; i < targetRows; ++i) {
             int newRow = currBlock->getRow() + 1;
             if (grid.isValidPosition(*currBlock, newRow, c)) {
                 currBlock->setPosition(newRow, c);
-                rowsMoved++;
             } else {
                 dropBlock();
                 return;
             }
         }
     }
+
 
     // check if block is now grounded
     if (!grid.isValidPosition(*currBlock, currBlock->getRow() + 1, c)) {
@@ -275,7 +264,7 @@ void Player::rotateCW() {
     int oldMaxRow = -1;
     int oldMinCol = 999;
     int oldMaxCol = -1;
-    
+
     for (auto [r, c] : oldCells) {
         if (r < oldMinRow) oldMinRow = r;
         if (r > oldMaxRow) oldMaxRow = r;
@@ -313,17 +302,11 @@ void Player::rotateCW() {
     }
 
     // heavy logic
-    int totalHeavy = (currBlock->isBlockHeavy() ? 1 : 0) +
-                     (levelLogic->isHeavy() ? 1 : 0);
+    bool levelHeavy = levelLogic->isHeavy();
+    // special-action heavy should NOT affect rotations
 
-    if (totalHeavy > 0) {
-        int targetRows = 0;
-        if (levelLogic->isHeavy()) {
-            targetRows += 1; // level heavy
-        }
-        if (currBlock->isBlockHeavy())  {
-            targetRows += 2; // special heavy
-        }
+    if (levelHeavy) {
+        int targetRows = 1; // only level heavy
 
         for (int i = 0; i < targetRows; ++i) {
             int hr = currBlock->getRow() + 1;
@@ -391,25 +374,17 @@ void Player::rotateCCW() {
         return;
     }
 
-    int totalHeavy = (currBlock->isBlockHeavy() ? 1 : 0) +
-                     (levelLogic->isHeavy() ? 1 : 0);
+    bool levelHeavy = levelLogic->isHeavy();
 
-    if (totalHeavy > 0) {
-        int targetRows = 0;
-        if (levelLogic->isHeavy()) {
-            targetRows += 1; // level heavy
-        }
-        if (currBlock->isBlockHeavy())  {
-            targetRows += 2; // special heavy
-        }
+    if (levelHeavy) {
+        int targetRows = 1;
 
         for (int i = 0; i < targetRows; ++i) {
             int hr = currBlock->getRow() + 1;
             int hc = currBlock->getCol();
             if (grid.isValidPosition(*currBlock, hr, hc)) {
                 currBlock->setPosition(hr, hc);
-            } 
-            else {
+            } else {
                 dropBlock();
                 return;
             }
