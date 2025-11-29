@@ -16,7 +16,7 @@ import <string>;
 import <iostream>;
 
 using namespace std;
-git 
+
 //helper to transform type to Block
 unique_ptr<Block> Player::createBlockFromType(char type) {
     switch (type) {
@@ -472,6 +472,8 @@ void Player::dropBlock() {
 
     justDropped = true;
     promoteNextBlock();
+
+    if (isBlind) isBlind = false;
 }
 
 // =========================
@@ -569,7 +571,14 @@ void Player::decLevel() {
 
 //special action
 void Player::forceNextBlock(char type) {
-    nextBlock = createBlockFromType(type);
+    currBlock = createBlockFromType(type);
+
+    if (!currBlock) return;
+
+    if (!grid.isValid(currBlock.get())) {
+        isGameOver = true;
+    }
+
 }
 
 // =========================

@@ -40,6 +40,7 @@ void GameEngine::executeSingleCommand(const string& cmd) {
     Player& p = currentPlayer();
     bool droppedByCommand = false;
 
+    // ---------------- Basic actions ----------------
     if (cmd == "left") {
         p.moveBlockLeft();
     }
@@ -57,11 +58,63 @@ void GameEngine::executeSingleCommand(const string& cmd) {
     }
     else if (cmd == "drop") {
         p.dropBlock();
-        droppedByCommand = true; //we need this to differentiate from whenevr the Heavy SpecialAction drops a Block
+        droppedByCommand = true;
+
+        // show board before prompting
+        notifyObservers();
 
         if (p.getGameOver()) {
             gameOver = true;
+            return;
         }
+
+        // ✅ PROMPT immediately if a special action was earned
+        // ✅ PROMPT immediately if a special action was earned
+        if (p.hasSpecialAction() && p.getNumSpecialActions() > 0) {
+            cout << "\n🎉 You cleared multiple rows! Choose a special action:\n";
+            cout << "   heavy\n";
+            cout << "   blind\n";
+            cout << "   force <I/J/L/O/S/T/Z>\n";
+            cout << "Enter your choice: ";
+            cout.flush();
+
+            // ✅ simple input flush without numeric_limits
+            cin.clear();
+            while (cin.peek() == '\n') {
+                cin.get(); // consume stray newline(s)
+            }
+
+            string choice;
+            getline(cin, choice);
+
+            if (choice == "heavy") {
+                Heavy effect;
+                otherPlayer().applyEffect(&effect);
+                p.useOneSpecialAction();
+            }
+            else if (choice == "blind") {
+                Blind effect;
+                otherPlayer().applyEffect(&effect);
+                p.useOneSpecialAction();
+            }
+            else if (choice.rfind("force", 0) == 0) {
+                istringstream iss(choice);
+                string word, block;
+                iss >> word >> block;
+                if (!block.empty()) {
+                    char type = toupper(block[0]);
+                    otherPlayer().forceNextBlock(type);
+                    p.useOneSpecialAction();
+                } else {
+                    cout << "Invalid format. Use: force I\n";
+                }
+            } else {
+                cout << "Invalid choice, skipping special action.\n";
+            }
+
+            notifyObservers(); // update after effect
+        }
+
     }
     else if (cmd == "hold") {
         p.holdBlock();
@@ -76,9 +129,7 @@ void GameEngine::executeSingleCommand(const string& cmd) {
         p.setRandomMode(true);
     }
     else if (cmd == "restart") {
-        for (auto& pl : players) {
-            pl.reset();
-        }
+        for (auto &pl : players) pl.reset();
         gameOver = false;
         currPlayer = 0;
     }
@@ -102,17 +153,18 @@ void GameEngine::executeSingleCommand(const string& cmd) {
             otherPlayer().forceNextBlock(cmd[0]);
             p.useOneSpecialAction();
         }
-    } else if (cmd == "quit") {
+    }
+    else if (cmd == "quit") {
         gameOver = true;
-        return;   
+        return;
     }
 
+    // ---------------- Turn + observer handling ----------------
     if (gameOver) {
         notifyObservers();
         return;
     }
 
-    // check for blocks that are auto-dropped by Heavy during left/right/down
     bool heavyAutoDrop = p.hasJustDropped();
     if (heavyAutoDrop) {
         p.clearJustDropped();
@@ -120,19 +172,20 @@ void GameEngine::executeSingleCommand(const string& cmd) {
 
     if (droppedByCommand || heavyAutoDrop) {
         switchTurns();
+        notifyObservers();
     }
 
     if (!gameOver) {
-        Player &p = currentPlayer();
-        if (p.hasJustDropped()) {
-            p.clearJustDropped();
+        Player &next = currentPlayer();
+        if (next.hasJustDropped()) {
+            next.clearJustDropped();
             switchTurns();
         }
     }
 
-    // OBSERVER PATTERN: Notify all observers after state change!
     notifyObservers();
 }
+
 
 //read from file to get Block sequence
 void GameEngine::executeSequenceFile(const string& filename) {
